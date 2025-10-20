@@ -1,0 +1,2 @@
+# Trabajo_Fin_de_Grado/Data
+In this folder you will find all the information related to the data used in this project. I will make a program to select the necesary images for the training and testing of the model. Part of the data is taken from public datasets and part of it is taken in https://data.mendeley.com/datasets/tywbtsjrjv/1.
