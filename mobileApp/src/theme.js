@@ -16,7 +16,4 @@ const theme = {
         medium: 24,
         small: 10
     },
-}
-
-export type theme = typeof theme;
-export default theme;
+};
