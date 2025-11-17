@@ -1,3 +1,5 @@
 ultralytics
 sahi
 torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+rembg
+PIL

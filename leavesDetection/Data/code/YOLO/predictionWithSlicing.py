@@ -1,6 +1,8 @@
 from sahi import AutoDetectionModel
 from sahi.predict import get_sliced_prediction
 import os
+from Data.code.utilities import makePlot
+from Data.code.utilities.makePlot import make_plot
 
 # ruta del YOLO entrenado
 YOLO_MODEL_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/Data/code/TFG_deteccion_hojas/yolov12_hoja_sana_run1/weights/best.pt'
@@ -10,6 +12,10 @@ IMAGE_SOURCE = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetect
 
 # donde guardamos la imagen con la prediccion hecha
 OUTPUT_IMAGE_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/Data/dataset/Resultados_Inferencia/inferencia_hojas_sanas/resultado_teselado/'
+
+#TODO: PROBAR EN EL ORDENADOR GRANDE YA QUE EN EL PORTATIL NO TENGO AL YOLO ENTRENADO
+MAX_HEIGHT = 640
+MAX_WIDTH = 640
 
 detection_model = AutoDetectionModel.from_pretrained(
     model_type='ultralytics',  # Tipo de modelo: YOLO
@@ -32,6 +38,25 @@ result = get_sliced_prediction(
 object_prediction_list = result.object_prediction_list
 
 print(f"total objetos detectados: {len(object_prediction_list)}")
+
+# hacemos un  grafico para ver la confianza de las predicciones tras filtrar
+confidentList = [pred.score.value for pred in result.object_prediction_list]
+make_plot(confidentList, "confianza_predicciones_teselado_antes_del_filtrado.png")# TODO: PROBAR SI LA LISTA SE CREA CORRECTAMENTE YA QUE NO TENGO EL ORDENADOR PARA COMPROBAR SI FUNCIONA CORRECTAMENTE
+
+validObjects = []
+purgated = 0
+for pred in object_prediction_list:
+    if pred.bbox.maxx-pred.bbox.minx < MAX_WIDTH and pred.bbox.maxy - pred.bbox.miny < MAX_HEIGHT:
+        validObjects.append(pred)
+    else:
+        purgated+=1
+print(f"Total de objetos purgados: {purgated}")
+result.prediction_list = validObjects
+
+# hacemos un  grafico para ver la confianza de las predicciones tras filtrar
+confidentList = [pred.score.value for pred in result.object_prediction_list] # TODO: PROBAR SI LA LISTA SE CREA CORRECTAMENTE YA QUE NO TENGO EL ORDENADOR PARA COMPROBAR SI FUNCIONA CORRECTAMENTE
+make_plot(confidentList, "confianza_predicciones_teselado_tras_filtrado.png")
+
 '''
 for pred in object_prediction_list:
     bbox = pred.bbox # Obtiene la caja delimitadora de YOLO ([xmin, ymin, xmax, ymax])
