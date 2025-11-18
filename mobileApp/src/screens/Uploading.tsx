@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, StyleSheet, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
+const BASE_URL = 'http://192.168.1.114:8000/v1/drive';
+const UPLOAD_ENDPOINT = '/upload';
+
 const UploadComponent = () => {
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState('Listo para subir.');
@@ -15,20 +18,19 @@ const UploadComponent = () => {
             return;
         }
 
-        // funcion para escoger el archivo
-        const pickerResult = await ImagePicker.launchImageLibraryAsync({
+        // escogemos el archivo
+        const pickedResult = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.All, // Permite fotos y videos
             allowsEditing: true,
-            aspect: [4, 3],
             quality: 1,
         });
 
-        if (pickerResult.canceled) {
+        if (pickedResult.canceled) {
             setStatus('Selección cancelada.');
             return;
         }
 
-        const { uri, type } = pickerResult.assets[0];
+        const { uri, type } = pickedResult.assets[0];
         setFileType(type);
 
         // probamos a subir el archivo
@@ -36,42 +38,76 @@ const UploadComponent = () => {
             setLoading(true);
             setStatus(`Subiendo ${type}...`);
 
-            //const downloadURL = await uploadFile(uri, type);
+            const downloadURL = await uploadFile(uri);
 
-            //setStatus(`¡Subida exitosa! URL: ${downloadURL.substring(0, 40)}...`);
-            Alert.alert('Éxito', 'El archivo ha sido subido a Firebase Storage.');
+            setStatus(`¡Subida exitosa! URL: ${downloadURL}...`);
+            Alert.alert('Éxito', 'El archivo ha sido subido correctamente.');
 
         } catch (error) {
             console.error("Error al subir el archivo:", error);
-            setStatus('Error al subir. Revisa la consola.');
-            Alert.alert('Error', 'No se pudo subir el archivo. Consulta los detalles en la consola.');
+            setStatus('Error al subir.');
+            Alert.alert('Error', 'No se pudo subir el archivo.');
         } finally {
             setLoading(false);
+        }
+    };
+    const uploadFile = async (localUri:string) => {
+
+        let filename = localUri.split('/').pop();
+        let typeMatch = /\.(\w+)$/.exec(filename);
+        let type = typeMatch ? `${fileType}/${typeMatch[1]}` : fileType;
+
+        const formData = new FormData();
+        formData.append('file', {
+            uri: localUri,
+            name: filename,
+            type: type // (ej: 'image/jpeg' o 'video/mp4')
+        } as any);
+
+        const fullUrl = `${BASE_URL}${UPLOAD_ENDPOINT}`;
+
+        try {
+            const response = await fetch(fullUrl, {
+                method: 'POST',
+                body: formData,//El tipo lo detecta fastapi automáticamente
+            });
+
+            const result = await response.json();
+            console.log(result);
+
+            if (response.ok) {
+                console.log("Subida exitosa:", result);
+                alert("Archivo subido con éxito!");
+            } else {
+                console.error("Error del servidor:", result);
+                alert("Error al subir el archivo.");
+            }
+
+        } catch (error) {
+            console.error("Error de red/conexión:", error);
+            alert("No se pudo conectar al servidor.");
         }
     };
 
     return (
         <View style={styles.container}>
-        <Text style={styles.header}>Subir Multimedia a Firebase</Text>
-    <Text style={styles.status}>{status}</Text>
-
-    {/* Botón "+" para iniciar la subida */}
-    <TouchableOpacity
-        style={styles.uploadButton}
-    onPress={pickAndUploadFile}
-    disabled={loading}
+        <Text style={styles.header}>Subir Multimedia</Text>
+        <Text style={styles.status}>{status}</Text>
+        <TouchableOpacity
+            style={styles.uploadButton}
+            onPress={pickAndUploadFile}
+            disabled={loading}
         >
-        {loading ? (
-                <ActivityIndicator size="large" color="#FFF" />
-) : (
-        <Text style={styles.buttonText}>+</Text>
-    )}
-    </TouchableOpacity>
+            {loading ? (
+                    <ActivityIndicator size="large" color="#FFF" />
+                    ) : (
+                    <Text style={styles.buttonText}>+</Text>
+                    )}
+        </TouchableOpacity>
 
-    {/* Indicador de qué tipo de archivo se seleccionó */}
-    {fileType ? <Text style={styles.fileType}>Tipo seleccionado: {fileType}</Text> : null}
-    </View>
-    );
+        {fileType ? <Text style={styles.fileType}>Tipo seleccionado: {fileType}</Text> : null}
+        </View>
+        );
     };
 
     const styles = StyleSheet.create({
