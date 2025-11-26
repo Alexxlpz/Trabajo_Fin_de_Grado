@@ -12,7 +12,7 @@ ETIQUETA_LINEA = f"{CLASE_ID} {X_CENTRO:.4f} {Y_CENTRO:.4f} {ANCHO:.4f} {ALTO:.4
 #LABELS_DIR = '../dataset/labels/Pepper,_bell___healthy'
 
 IMAGENES_DIR = '../../dataset/images/Pepper,_bell___Bacterial_spot'
-LABELS_DIR = '../../dataset/labels/Pepper,_bell___Bacterial_spot'
+LABELS_DIR = '../../dataset/training_set/labels/Pepper,_bell___Bacterial_spot'
 
 # makedirs es para hacer la carpeta si no existe
 os.makedirs(LABELS_DIR, exist_ok=True)

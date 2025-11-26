@@ -5,15 +5,14 @@ from Data.code.utilities import makePlot
 from Data.code.utilities.makePlot import make_plot
 
 # ruta del YOLO entrenado
-YOLO_MODEL_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/Data/code/TFG_deteccion_hojas/yolov12_hoja_sana_run1/weights/best.pt'
+YOLO_MODEL_PATH = 'TFG_deteccion_hojas/yolov12_hoja_sana_run2/weights/best.pt'
 
 # ruta de la imagen a predicie
 IMAGE_SOURCE = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/Data/dataset/predictionImages/imagenReal.jpg'
 
 # donde guardamos la imagen con la prediccion hecha
-OUTPUT_IMAGE_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/Data/dataset/Resultados_Inferencia/inferencia_hojas_sanas/resultado_teselado/'
+OUTPUT_IMAGE_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/Data/dataset/Resultados_Inferencia/inferencia_hojas_sanas/resultado_teselado'
 
-#TODO: PROBAR EN EL ORDENADOR GRANDE YA QUE EN EL PORTATIL NO TENGO AL YOLO ENTRENADO
 MAX_HEIGHT = 640
 MAX_WIDTH = 640
 
@@ -41,7 +40,7 @@ print(f"total objetos detectados: {len(object_prediction_list)}")
 
 # hacemos un  grafico para ver la confianza de las predicciones tras filtrar
 confidentList = [pred.score.value for pred in result.object_prediction_list]
-make_plot(confidentList, "confianza_predicciones_teselado_antes_del_filtrado.png")# TODO: PROBAR SI LA LISTA SE CREA CORRECTAMENTE YA QUE NO TENGO EL ORDENADOR PARA COMPROBAR SI FUNCIONA CORRECTAMENTE
+make_plot(confidentList, "confianza_predicciones_teselado_antes_del_filtrado.png")# todo: hacer que si el archivo ya existe se guarde con otro nombre para no sobreescribir
 
 validObjects = []
 purgated = 0
@@ -54,8 +53,8 @@ print(f"Total de objetos purgados: {purgated}")
 result.prediction_list = validObjects
 
 # hacemos un  grafico para ver la confianza de las predicciones tras filtrar
-confidentList = [pred.score.value for pred in result.object_prediction_list] # TODO: PROBAR SI LA LISTA SE CREA CORRECTAMENTE YA QUE NO TENGO EL ORDENADOR PARA COMPROBAR SI FUNCIONA CORRECTAMENTE
-make_plot(confidentList, "confianza_predicciones_teselado_tras_filtrado.png")
+confidentList = [pred.score.value for pred in result.object_prediction_list]
+make_plot(confidentList, "confianza_predicciones_teselado_tras_filtrado.png") # todo: hacer que si el archivo ya existe se guarde con otro nombre para no sobreescribir
 
 '''
 for pred in object_prediction_list:

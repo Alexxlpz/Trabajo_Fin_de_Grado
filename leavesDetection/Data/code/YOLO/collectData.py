@@ -2,7 +2,7 @@ from ultralytics import YOLO
 
 YAML_FILE = 'hojas.yaml'
 PROJECT_NAME = 'TFG_deteccion_hojas'
-RUN_NAME = 'yolov12_hoja_sana_run1'
+RUN_NAME = 'yolov12_hoja_sana_run2'
 if __name__ == '__main__':
     print("hello world!")
 
@@ -25,4 +25,4 @@ if __name__ == '__main__':
         # patience=50 Detiene el entrenamiento si no hay mejora después de 50 épocas
     )
 
-    print("Entrenamiento completado :))).")
+    print("Entrenamiento completado :)")

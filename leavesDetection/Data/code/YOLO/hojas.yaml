@@ -1,9 +1,11 @@
-path: ../Trabajo_Fin_de_Grado/leavesDetection/Data/dataset
+path: ../Trabajo_Fin_de_Grado/leavesDetection/Data/dataset/training_set
 
 # ruta donde estan las imagenes con las que pondremos a YOLO a entrenar
+#train: images
 train: images
 # ruta donde estan las imagenes que usará YOLO para validar el entrenamiento
-val: images
+#val: images
+val : images
 
 # numero de clases
 nc: 1
