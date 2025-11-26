@@ -9,6 +9,10 @@ const HomeScreen = ({ navigation }) => {
                 title="Grabar Video"
                 onPress={() => navigation.navigate('Recording')}
             />
+            <Button
+                title="Subir archivo"
+                onPress={() => navigation.navigate('Uploading')}
+            />
         </View>
     );
 }
