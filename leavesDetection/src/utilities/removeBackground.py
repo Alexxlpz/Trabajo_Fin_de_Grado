@@ -2,8 +2,8 @@ from rembg import remove
 from PIL import Image
 import os
 
-pathInput = '../Trabajo_Fin_de_Grado/Data/dataset/images/Pepper,_bell___healthy/'
-pathOutput = '../Trabajo_Fin_de_Grado/Data/code/ImageCreation/ImagesWithoutBackground'
+pathInput = '../Trabajo_Fin_de_Grado/data/dataset/images/Pepper,_bell___healthy/'
+pathOutput = '../Trabajo_Fin_de_Grado/data/dataset/images_withoutBG/Pepper,_bell___healthy'
 
 for image in os.listdir(pathInput):
     if image.endswith(".png") or image.endswith(".jpg") or image.endswith(".jpeg"):

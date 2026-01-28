@@ -1,17 +1,16 @@
 from sahi import AutoDetectionModel
 from sahi.predict import get_sliced_prediction
 import os
-from Data.code.utilities import makePlot
-from Data.code.utilities.makePlot import make_plot
+from src.utilities.makePlot import make_plot
 
 # ruta del YOLO entrenado
-YOLO_MODEL_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/Data/code/TFG_deteccion_hojas/yolov12_hoja_sana_run1/weights/best.pt'
+YOLO_MODEL_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/models/CNN/yolov12_Leaves_Detector_run1/weights/best.pt'
 
 # ruta de la imagen a predicie
-IMAGE_SOURCE = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/Data/dataset/predictionImages/imagenReal.jpg'
+IMAGE_SOURCE = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/dataset/dummy_images/imagenReal.jpg'
 
 # donde guardamos la imagen con la prediccion hecha
-OUTPUT_IMAGE_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/Data/dataset/Resultados_Inferencia/inferencia_hojas_sanas/resultado_teselado/'
+OUTPUT_IMAGE_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/inference_results'
 
 #TODO: PROBAR EN EL ORDENADOR GRANDE YA QUE EN EL PORTATIL NO TENGO AL YOLO ENTRENADO
 MAX_HEIGHT = 640
@@ -46,7 +45,7 @@ make_plot(confidentList, "confianza_predicciones_teselado_antes_del_filtrado.png
 validObjects = []
 purgated = 0
 for pred in object_prediction_list:
-    if pred.bbox.maxx-pred.bbox.minx < MAX_WIDTH and pred.bbox.maxy - pred.bbox.miny < MAX_HEIGHT:
+    if pred.bbox.maxx-pred.bbox.minx < MAX_WIDTH and pred.bbox.maxy - pred.bbox.miny < MAX_HEIGHT: # In order to try to filter, we only accept predictions smaller than the slice size (640x640)
         validObjects.append(pred)
     else:
         purgated+=1

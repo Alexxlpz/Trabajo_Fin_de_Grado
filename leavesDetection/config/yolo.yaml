@@ -1,4 +1,4 @@
-path: ../Trabajo_Fin_de_Grado/leavesDetection/Data/dataset
+path: ../Trabajo_Fin_de_Grado/leavesDetection/data/dataset
 
 # ruta donde estan las imagenes con las que pondremos a YOLO a entrenar
 train: images

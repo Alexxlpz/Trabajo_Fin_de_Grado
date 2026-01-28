@@ -4,7 +4,7 @@ import Camera from '../component/Camera';
 
 const Recording = () => {
     return (
-        <Camera/>
+        <Camera />
     );
 }
 

@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt # para hacer un grafico de confianza de la predi
 import numpy as np
 
 
-def make_plot(x, outputPath):
+def make_plot(x, name):
     plt.figure(figsize=(10, 6))
     plt.plot(x, marker='o', linestyle='-', color='b')
     plt.title('Confianza de Predicción de YOLO por Imagen')
@@ -10,12 +10,12 @@ def make_plot(x, outputPath):
     plt.ylabel('Confianza de Predicción')
     plt.ylim(0, 1)
     plt.grid(True)
-    plt.savefig(outputPath)
+    plt.savefig("../../data/plots/"+name)
     plt.close()
 
 if __name__ == '__main__':
     # Ejemplo de uso
     x = np.random.rand(20)  # Datos de ejemplo
-    outputPath = 'confianza_yolo_plot.png'
-    make_plot(x, outputPath)
-    print(f"Gráfico guardado en {outputPath}")
+    name = 'confianza_yolo_plot'
+    make_plot(x, name)
+    print(f"Gráfico guardado en ../../data/plots/{name}")

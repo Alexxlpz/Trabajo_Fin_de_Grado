@@ -1,3 +1,5 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const { spawnSync } = require('child_process');
 
 const user = process.env.EXPO_USER;
@@ -11,5 +13,5 @@ if (!user || !pass) {
 let r = spawnSync('npx', ['expo', 'login', '-u', user, '-p', pass], { stdio: 'inherit', shell: true });
 if (r.status !== 0) process.exit(r.status);
 
-r = spawnSync('npx', ['expo', 'start'], { stdio: 'inherit', shell: true });
+r = spawnSync('npx', ['expo', 'start', '--tunnel', ...process.argv.slice(2)], { stdio: 'inherit', shell: true });
 process.exit(r.status || 0);

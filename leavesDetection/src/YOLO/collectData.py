@@ -1,13 +1,13 @@
 from ultralytics import YOLO
 
-YAML_FILE = 'hojas.yaml'
-PROJECT_NAME = 'TFG_deteccion_hojas'
-RUN_NAME = 'yolov12_hoja_sana_run1'
+YAML_FILE = '../../config/yolo.yaml'
+PROJECT_NAME = '../../data/models/CNN'
+RUN_NAME = 'yolov12_Leaves_Detector_run1'
 if __name__ == '__main__':
     print("hello world!")
 
     #cargo YOLO12 al sistema
-    model = YOLO('yolo12n.pt')
+    model = YOLO('../../data/models/yolo12n.pt')
 
     print(f"Iniciando entrenamiento con el archivo de configuración: {YAML_FILE}")
 
