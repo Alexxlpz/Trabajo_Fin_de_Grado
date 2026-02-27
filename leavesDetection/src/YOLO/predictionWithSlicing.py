@@ -4,7 +4,7 @@ import os
 from src.utilities.makePlot import make_plot
 
 # ruta del YOLO entrenado
-YOLO_MODEL_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/models/CNN/yolov12_Leaves_Detector_run1/weights/best.pt'
+YOLO_MODEL_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/models/CNN/yolov12_Leaves_Detector_run2/weights/best.pt'
 
 # ruta de la imagen a predicie
 IMAGE_SOURCE = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/dataset/dummy_images/imagenReal.jpg'
@@ -40,7 +40,7 @@ print(f"total objetos detectados: {len(object_prediction_list)}")
 
 # hacemos un  grafico para ver la confianza de las predicciones tras filtrar
 confidentList = [pred.score.value for pred in result.object_prediction_list]
-make_plot(confidentList, "confianza_predicciones_teselado_antes_del_filtrado.png")# TODO: PROBAR SI LA LISTA SE CREA CORRECTAMENTE YA QUE NO TENGO EL ORDENADOR PARA COMPROBAR SI FUNCIONA CORRECTAMENTE
+make_plot(confidentList, "confianza_predicciones_teselado_antes_del_filtrado.png")
 
 validObjects = []
 purgated = 0
@@ -50,10 +50,12 @@ for pred in object_prediction_list:
     else:
         purgated+=1
 print(f"Total de objetos purgados: {purgated}")
+# actualizar la lista de predicciones que usan las visualizaciones/exportaciones
+result.object_prediction_list = validObjects
 result.prediction_list = validObjects
 
 # hacemos un  grafico para ver la confianza de las predicciones tras filtrar
-confidentList = [pred.score.value for pred in result.object_prediction_list] # TODO: PROBAR SI LA LISTA SE CREA CORRECTAMENTE YA QUE NO TENGO EL ORDENADOR PARA COMPROBAR SI FUNCIONA CORRECTAMENTE
+confidentList = [pred.score.value for pred in result.object_prediction_list]
 make_plot(confidentList, "confianza_predicciones_teselado_tras_filtrado.png")
 
 '''

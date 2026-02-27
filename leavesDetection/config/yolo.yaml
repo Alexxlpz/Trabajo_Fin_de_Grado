@@ -5,6 +5,9 @@ train: images
 # ruta donde estan las imagenes que usará YOLO para validar el entrenamiento
 val: images
 
+#para que se mezclen imagenes durante el entrenamiento y así mejorar la capacidad de generalización del modelo
+mosaic: 1.0
+
 # numero de clases
 nc: 1
 

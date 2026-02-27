@@ -2,7 +2,7 @@ from ultralytics import YOLO
 
 YAML_FILE = '../../config/yolo.yaml'
 PROJECT_NAME = '../../data/models/CNN'
-RUN_NAME = 'yolov12_Leaves_Detector_run1'
+RUN_NAME = 'yolov12_Leaves_Detector_run4'
 if __name__ == '__main__':
     print("hello world!")
 
