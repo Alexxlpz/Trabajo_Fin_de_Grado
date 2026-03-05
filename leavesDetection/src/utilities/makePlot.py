@@ -3,11 +3,12 @@ import numpy as np
 
 
 def make_plot(x, name):
+    print(len(x))
     plt.figure(figsize=(10, 6))
     plt.plot(x, marker='o', linestyle='-', color='b')
-    plt.title('Confianza de Predicción de YOLO por Imagen')
-    plt.xlabel('Número de Imagen')
-    plt.ylabel('Confianza de Predicción')
+    plt.title('Confidence Scores of Detected Objects')
+    plt.xlabel('Number of objets detected')
+    plt.ylabel('Confidence Score')
     plt.ylim(0, 1)
     plt.grid(True)
     plt.savefig("../../data/plots/"+name)

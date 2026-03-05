@@ -1,12 +1,13 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { useState } from 'react';
-import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useState, useRef } from 'react';
+import { Button, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { Fontisto } from '@expo/vector-icons';
 import Constants from "expo-constants";
 
 export default function Camera() {
-    const [recording, setRecording] = useState<boolean>(false);
+    const [recording, setRecording] = useState<boolean>(true);
     const [permission, requestPermission] = useCameraPermissions();
+    const cameraRef = useRef<CameraView>(null);
 
     if (!permission) {
         // Camera permissions are still loading.
@@ -27,13 +28,56 @@ export default function Camera() {
         setRecording(current => (current === false));
     }
 
+    async function takePicture(){
+         if (cameraRef.current) {
+             try {
+                 const options = { quality: 0.7, base64: true };
+                 const data = await cameraRef.current.takePictureAsync(options);
+                 console.log('Imagen capturada:', data?.uri);
+
+                 // si el dato no es null se lo pasamos a la función para que lo mande al backend y lo analice
+                 if (data?.base64) {
+                     await fetchPicture(data.base64);
+                 }
+
+             } catch (error) {
+                 console.error("Error al tomar la foto:", error);
+             }
+         }
+    }
+
+    async function fetchPicture(base64Data: string){
+            try {
+                // lo enviamos en una peticion post ya que es exageradamente larga la cadena de b64
+              const response = await fetch('http://10.5.0.2:8000/analyze/', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ image: base64Data }),
+              });
+              
+              if (!response.ok) {
+                  Alert.alert('Error', `La respuesta del servidor no es correcta (Status: ${response.status})`);
+                  return;
+              }
+
+              const result = await response.json();
+              console.log('Respuesta del servidor:', result);
+              
+            } catch (error) {
+              console.error(error);
+              Alert.alert('Error de conexión', 'No se pudo conectar con el servidor. Revisa que el backend esté corriendo en el puerto 8000.');
+            }
+    }
+
     return (
         <View style={styles.container}>
-            <CameraView style={styles.camera} active={recording} />
+            <CameraView style={styles.camera} active={recording} ref={cameraRef} />
             <View style={styles.recordingText}>
                 <View style={{ backgroundColor: recording ? 'red' : 'gray', borderRadius: 4, flexDirection: 'row', paddingHorizontal: 4 }}>
                     <Fontisto name="record" size={10} color='white' style={{marginRight: 6, marginTop: 5}} />
-                    <Text>{recording ? 'Camera...' : 'Not Camera'}</Text>
+                    <Text style={{color: 'white'}}>{recording ? 'Camera...' : 'Not Camera'}</Text>
                 </View>
             </View>
             <View style={styles.buttonContainer}>
@@ -43,6 +87,14 @@ export default function Camera() {
                     <Fontisto name="record" size={24} color={recording ? 'white' : 'black'} />
 
                 </TouchableOpacity>
+
+                <TouchableOpacity style={recording ? styles.button_recording : styles.button_not_recording}
+                    onPress={takePicture}>
+
+                    <Fontisto name="camera" size={24} color={recording ? 'white' : 'black'} />
+
+                </TouchableOpacity>
+
             </View>
         </View>
     );
@@ -69,6 +121,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 64,
         justifyContent: 'center',
         alignItems: 'center',
+        gap: 20
     },
     text: {
         fontSize: 24,
