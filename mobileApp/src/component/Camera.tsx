@@ -1,6 +1,6 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useState, useRef } from 'react';
-import { Button, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { Modal, Button, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { Fontisto } from '@expo/vector-icons';
 import Constants from "expo-constants";
 
@@ -33,11 +33,14 @@ export default function Camera() {
              try {
                  const options = { quality: 0.7, base64: true };
                  const data = await cameraRef.current.takePictureAsync(options);
-                 console.log('Imagen capturada:', data?.uri);
+                 console.log('Imagen capturada:');
 
                  // si el dato no es null se lo pasamos a la función para que lo mande al backend y lo analice
-                 if (data?.base64) {
+                 //console.log(data);
+                 if (data !== null) {
+                     //console.log('antes de enviar la imagen');
                      await fetchPicture(data.base64);
+                     console.log('Imagen enviada al servidor');
                  }
 
              } catch (error) {
@@ -49,12 +52,12 @@ export default function Camera() {
     async function fetchPicture(base64Data: string){
             try {
                 // lo enviamos en una peticion post ya que es exageradamente larga la cadena de b64
-              const response = await fetch('http://10.5.0.2:8000/analyze/', {
+              const response = await fetch('http://192.168.1.115:8000/analyze', {
                   method: 'POST',
                   headers: {
                       'Content-Type': 'application/json',
                   },
-                  body: JSON.stringify({ image: base64Data }),
+                  body: JSON.stringify({ imageb64: base64Data }),
               });
               
               if (!response.ok) {
@@ -64,6 +67,7 @@ export default function Camera() {
 
               const result = await response.json();
               console.log('Respuesta del servidor:', result);
+              Alert.alert('cantidad de hojas detectadas: '+ result.number);
               
             } catch (error) {
               console.error(error);
