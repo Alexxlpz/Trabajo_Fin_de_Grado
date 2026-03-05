@@ -35,7 +35,10 @@ export default function Camera() {
                  const data = await cameraRef.current.takePictureAsync(options);
                  console.log('Imagen capturada:', data?.uri);
 
-                 await fetchPicture();
+                 // si el dato no es null se lo pasamos a la función para que lo mande al backend y lo analice
+                 if (data?.base64) {
+                     await fetchPicture(data.base64);
+                 }
 
              } catch (error) {
                  console.error("Error al tomar la foto:", error);
@@ -43,18 +46,28 @@ export default function Camera() {
          }
     }
 
-    async function fetchPicture(){
+    async function fetchPicture(base64Data: string){
             try {
-              const response = await fetch('https://reactnative.dev/movies.jso'); // TODO: crear el backend que reciba la imagen b64 y poner aqui la direccion con la que se comunica
+                // lo enviamos en una peticion post ya que es exageradamente larga la cadena de b64
+              const response = await fetch('http://10.5.0.2:8000/analyze/', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ image: base64Data }),
+              });
               
               if (!response.ok) {
                   Alert.alert('Error', `La respuesta del servidor no es correcta (Status: ${response.status})`);
                   return;
               }
+
+              const result = await response.json();
+              console.log('Respuesta del servidor:', result);
               
             } catch (error) {
               console.error(error);
-              Alert.alert('Error de conexión', 'No se pudo conectar con el servidor.');
+              Alert.alert('Error de conexión', 'No se pudo conectar con el servidor. Revisa que el backend esté corriendo en el puerto 8000.');
             }
     }
 
