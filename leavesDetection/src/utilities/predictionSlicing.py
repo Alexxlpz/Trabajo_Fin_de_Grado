@@ -1,3 +1,5 @@
+import base64
+
 from sahi import AutoDetectionModel
 from sahi.predict import get_sliced_prediction
 import os
@@ -73,7 +75,10 @@ def predictionSlicing(imageName: str, plots: bool = False):
     os.makedirs(OUTPUT_IMAGE_PATH, exist_ok=True)
     result.export_visuals(export_dir=OUTPUT_IMAGE_PATH, file_name=teseledImagenName)
 
+    with open(OUTPUT_IMAGE_PATH+'/'+teseledImagenName+'.png', "rb") as image:
+        encodeImage = base64.b64encode(image.read()).decode('utf-8')
+
     print("Proceso finalizado!!!")
     os.remove(IMAGE_SOURCE)
 
-    return teseledImagenName, len(validObjects)
+    return teseledImagenName, encodeImage, len(validObjects)

@@ -11,9 +11,9 @@ app = FastAPI()
 @app.post("/analyze")
 async def analyzeImage(imageb64: str = Body(..., embed=True)):
     name = await run_in_threadpool(recibir, imageb64)
-    teseledImagenName, cont = await run_in_threadpool(predictionSlicing, name)
+    teseledImagenName, encodeImage, cont = await run_in_threadpool(predictionSlicing, name)
 
-    return {"message": "OK", "number": cont}
+    return {"message": "OK", "number": cont, "imageb64": encodeImage}
 
 def recibir(imageb64: str):
     image_data = base64.b64decode(imageb64)
