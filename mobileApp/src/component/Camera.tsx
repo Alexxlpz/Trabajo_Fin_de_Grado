@@ -1,6 +1,6 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useState, useRef } from 'react';
-import { Modal, Button, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { Modal, Button, StyleSheet, Text, TouchableOpacity, View, Alert, Image } from 'react-native';
 import { Fontisto } from '@expo/vector-icons';
 import Constants from "expo-constants";
 
@@ -8,6 +8,11 @@ export default function Camera() {
     const [recording, setRecording] = useState<boolean>(true);
     const [permission, requestPermission] = useCameraPermissions();
     const cameraRef = useRef<CameraView>(null);
+
+    const [modalVisible, setModalVisible] = useState(false);
+    const [resultData, setResultData] = useState<{number: number, imageb64: string} | null>(null); // guardamos el return que nos devuelve el backend, que contiene el numero de objetos detectados y la imagen en b64
+
+
 
     if (!permission) {
         // Camera permissions are still loading.
@@ -52,7 +57,7 @@ export default function Camera() {
     async function fetchPicture(base64Data: string){
             try {
                 // lo enviamos en una peticion post ya que es exageradamente larga la cadena de b64
-              const response = await fetch('http://192.168.1.115:8000/analyze', {
+              const response = await fetch('http://192.168.1.114:8000/analyze', {
                   method: 'POST',
                   headers: {
                       'Content-Type': 'application/json',
@@ -66,12 +71,15 @@ export default function Camera() {
               }
 
               const result = await response.json();
-              console.log('Respuesta del servidor:', result);
-              Alert.alert('cantidad de hojas detectadas: '+ result.number);
-              
+               console.log('Respuesta del servidor recibida');
+
+               // Guardamos los datos y mostramos el modal
+               setResultData(result);
+               setModalVisible(true);
+
             } catch (error) {
               console.error(error);
-              Alert.alert('Error de conexión', 'No se pudo conectar con el servidor. Revisa que el backend esté corriendo en el puerto 8000.');
+              Alert.alert('Error de conexión', 'No se pudo conectar con el servidor.');
             }
     }
 
@@ -99,6 +107,31 @@ export default function Camera() {
 
                 </TouchableOpacity>
 
+                <Modal visible={modalVisible} transparent={true} animationType="slide">
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <Text style={styles.modalTitle}>Análisis Completado</Text>
+
+                             {resultData && (
+                                 <>
+                                     <Image
+                                         source={{ uri: `data:image/jpeg;base64,${resultData.imageb64}` }} // NO NOS HACE FALTA DESCODIFICAR, REACT NATIVE LO HACE AUTOMATICAMENTE
+
+                                         style={styles.resultImage}
+                                         resizeMode="contain"
+                                     />
+                                     <Text style={styles.modalText}>Hojas detectadas: {resultData.number}</Text>
+                                 </>
+                             )}
+
+                             <TouchableOpacity
+                                 onPress={() => setModalVisible(false)}
+                                 style={styles.closeButton}>
+                                 <Text style={styles.closeButtonText}>Cerrar</Text>
+                             </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
             </View>
         </View>
     );
@@ -156,4 +189,42 @@ const styles = StyleSheet.create({
         zIndex: 10,
         flexDirection: 'row',
     },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.7)'
+    },modalContent: {
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 20,
+        alignItems: 'center',
+        width: '85%',
+        maxHeight: '80%'
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 15
+    },
+    resultImage: {
+        width: '100%',
+        height: 300,
+        borderRadius: 10,
+        marginBottom: 15,
+    },
+    modalText: {
+        fontSize: 18,
+        marginBottom: 20,
+    },
+    closeButton: {
+        backgroundColor: '#2196F3',
+        paddingHorizontal: 30,
+        paddingVertical: 10,
+        borderRadius: 10
+    },
+    closeButtonText: {
+        color: 'white',
+        fontWeight: 'bold'
+    }
 });
