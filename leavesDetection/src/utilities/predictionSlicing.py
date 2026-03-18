@@ -6,32 +6,72 @@ from PIL import Image, ExifTags
 from sahi import AutoDetectionModel
 from sahi.predict import get_sliced_prediction
 import os
+import time
 
 from src.utilities.classifyObject import classifyObject
 from src.utilities.makePlot import make_plot
 
+# ruta del YOLO entrenado
+YOLO_MODEL_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/models/CNN/yolov12_Leaves_Detector_run2/weights/best.pt'
+
+# donde guardamos la imagen con la prediccion hecha
+OUTPUT_IMAGE_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/inference_results'
+
+CACHE_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/cache'
+
+_MODEL = None
+
+def get_model():
+    """
+    Carga y cachea el modelo. Lanza FileNotFoundError si no existe el archivo.
+    """
+    global _MODEL
+    if _MODEL is not None:
+        return _MODEL
+
+    if not os.path.exists(YOLO_MODEL_PATH):
+        raise FileNotFoundError(f"Modelo no encontrado en `{YOLO_MODEL_PATH}`")
+
+    try:
+        _MODEL = AutoDetectionModel.from_pretrained(
+            model_type='ultralytics',  # Tipo de modelo: YOLO
+            model_path=YOLO_MODEL_PATH,
+            confidence_threshold=0.3,  # Umbral de confianza al principio
+            device="cuda:0"  # para usar la grafica
+        )
+    except Exception as e:
+        raise RuntimeError(f"Error cargando el modelo desde `{YOLO_MODEL_PATH}`: {e}")
+    return _MODEL
+
+# ---------------------------------------------------------------------------------------------------------------------
+
 def predictionSlicing(imageName: str, plots: bool = False):
+
     teseledImagenName = f"teselado_{imageName}"
-
-    # ruta del YOLO entrenado
-    YOLO_MODEL_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/models/CNN/yolov12_Leaves_Detector_run2/weights/best.pt'
-
     # ruta de la imagen a predicie
-    IMAGE_SOURCE = f'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/cache/{imageName}'
+    IMAGE_SOURCE = os.path.join(CACHE_PATH, imageName)
 
-    # donde guardamos la imagen con la prediccion hecha
-    OUTPUT_IMAGE_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/inference_results'
+    detection_model = get_model()
+    print("Modelo YOLO cargado exitosamente.")
 
+    result, validObjects = prediction(IMAGE_SOURCE, detection_model, plots)
+
+    encodeImage = cropAndClasify(result.object_prediction_list, IMAGE_SOURCE, CACHE_PATH)
+
+    #os.makedirs(OUTPUT_IMAGE_PATH, exist_ok=True)
+    #result.export_visuals(export_dir=OUTPUT_IMAGE_PATH, file_name=teseledImagenName)
+
+    #with open(OUTPUT_IMAGE_PATH+'/'+teseledImagenName+'.png', "rb") as image:
+        #encodeImage = base64.b64encode(image.read()).decode('utf-8')
+
+    print("Proceso finalizado!!!")
+    os.remove(IMAGE_SOURCE)
+
+    return teseledImagenName, encodeImage, len(validObjects)
+
+def prediction(IMAGE_SOURCE, detection_model, plots: bool = False):
     MAX_HEIGHT = 640
     MAX_WIDTH = 640
-
-    detection_model = AutoDetectionModel.from_pretrained(
-        model_type='ultralytics',  # Tipo de modelo: YOLO
-        model_path=YOLO_MODEL_PATH,
-        confidence_threshold=0.3,  # Umbral de confianza al principio
-        device="cuda:0"  # para usar la grafica
-    )
-    print("Modelo YOLO cargado exitosamente.")
 
     # Ponemos que los teselados sean 640x640 ya que a yolo lo entrenemos asi y se le hara mas facil predecir de esa manera
     result = get_sliced_prediction(
@@ -47,7 +87,7 @@ def predictionSlicing(imageName: str, plots: bool = False):
 
     print(f"total objetos detectados: {len(object_prediction_list)}")
 
-    if plots:
+    if plots: # guardados en /data/plots
         # hacemos un  grafico para ver la confianza de las predicciones tras filtrar
         confidentList = [pred.score.value for pred in result.object_prediction_list]
         make_plot(confidentList, "confianza_predicciones_teselado_antes_del_filtrado.png")
@@ -59,32 +99,24 @@ def predictionSlicing(imageName: str, plots: bool = False):
             validObjects.append(pred)
         else:
             purgated += 1
+
     print(f"Total de objetos purgados: {purgated}")
     # actualizar la lista de predicciones que usan las visualizaciones/exportaciones
+
     result.object_prediction_list = validObjects
     result.prediction_list = validObjects
 
-    if plots:
+    if plots: # guardados en /data/plots
         # hacemos un  grafico para ver la confianza de las predicciones tras filtrar
         confidentList = [pred.score.value for pred in result.object_prediction_list]
         make_plot(confidentList, "confianza_predicciones_teselado_tras_filtrado.png")
 
-    encodeImage = cropAndClasify(result.object_prediction_list, IMAGE_SOURCE, 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/cache/crops')
 
-    #os.makedirs(OUTPUT_IMAGE_PATH, exist_ok=True)
-    #result.export_visuals(export_dir=OUTPUT_IMAGE_PATH, file_name=teseledImagenName)
-
-    #with open(OUTPUT_IMAGE_PATH+'/'+teseledImagenName+'.png', "rb") as image:
-        #encodeImage = base64.b64encode(image.read()).decode('utf-8')
-
-    print("Proceso finalizado!!!")
-    os.remove(IMAGE_SOURCE)
-
-    return teseledImagenName, encodeImage, len(validObjects)
+    return result, validObjects
 
 
-
-def cropAndClasify(predictions, image, output_folder):
+def cropAndClasify(predictions, image, cache_folder):
+    output_folder = os.path.join(cache_folder, "crops")
     os.makedirs(output_folder, exist_ok=True)
 
     img = load_image_fix_orientation(image)
@@ -97,25 +129,24 @@ def cropAndClasify(predictions, image, output_folder):
 
         crop, coords = cropObject(img, object_prediction)
 
-        filename = f"crop_{i}.jpg"
-        out_path = os.path.join(output_folder, filename)
-        ok = cv2.imwrite(out_path, crop, [cv2.IMWRITE_JPEG_QUALITY, int(100)])
-
-        if ok :
-            saved+=1
-            if classifyObject(img):
-                #pintamos cuadro verde
-                cv2.rectangle(img, (coords[0], coords[1]), (coords[2], coords[3]), (0, 255, 0), 2)
-            else:
-                #pintamos cuadro rojo
-                cv2.rectangle(img, (coords[0], coords[1]), (coords[2], coords[3]), (0, 0, 255), 2)
+        #filename = f"crop_{i}.jpg"
+        #out_path = os.path.join(output_folder, filename)
+        #ok = cv2.imwrite(out_path, crop, [cv2.IMWRITE_JPEG_QUALITY, int(100)]) #realmente no es necesario guardar el
+                                                                                # crop, le pasamos directamente el array
+                                                                                #al clasificador y que se encargue el
+                                                                                #otro archivo
+        if classifyObject(crop):
+            #pintamos cuadro verde
+            cv2.rectangle(img, (coords[0], coords[1]), (coords[2], coords[3]), (0, 255, 0), 2)
         else:
-            print(f"Error al guardar el crop: {out_path}")
+            #pintamos cuadro rojo
+            cv2.rectangle(img, (coords[0], coords[1]), (coords[2], coords[3]), (0, 0, 255), 2)
 
     print("se han guardado "+str(saved)+" crops")
 
     # Guardar la imagen anotada y devolverla en Base64
-    annotated_filename = f"annotated_{os.path.basename(image)}.png"
+    timestamp = time.strftime("%Y%m%d-%H%M%S")
+    annotated_filename = f"annotated_{timestamp}.png"
     annotated_path = os.path.join(output_folder, annotated_filename)
     ok = cv2.imwrite(annotated_path, img, [cv2.IMWRITE_JPEG_QUALITY, int(90)])
 
