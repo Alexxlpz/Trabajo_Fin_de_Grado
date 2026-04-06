@@ -4,10 +4,10 @@ import os
 from src.utilities.makePlot import make_plot
 
 # ruta del YOLO entrenado
-YOLO_MODEL_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/models/CNN/yolov12_Leaves_Detector_run2/weights/best.pt'
+YOLO_MODEL_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/models/CNN/yolov12_Leaves_Detector_run_6(with-sam3)/weights/best.pt'
 
 # ruta de la imagen a predicie
-IMAGE_SOURCE = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/dataset/dummy_images/imagenReal.jpg'
+IMAGE_SOURCE = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/dataset/dummy_images/imagenReal2.jpeg'
 
 # donde guardamos la imagen con la prediccion hecha
 OUTPUT_IMAGE_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/inference_results'
@@ -67,6 +67,6 @@ for pred in object_prediction_list:
     print(f"------- Clase: {category}, Confianza: {score:.2f}, BBox: {bbox.to_xywh()}")
 '''
 os.makedirs(OUTPUT_IMAGE_PATH, exist_ok=True)
-result.export_visuals(export_dir=OUTPUT_IMAGE_PATH, file_name="prediccion_teselada")
+result.export_visuals(export_dir=OUTPUT_IMAGE_PATH, file_name="yolov12_Leaves_Detector_run_6(with-sam3)")
 
 print("Proceso finalizado!!!")

@@ -1,3 +1,5 @@
+pillow-heif
+transformers
 uvicorn
 fastapi
 torch
