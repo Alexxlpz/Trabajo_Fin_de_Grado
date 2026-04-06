@@ -1,8 +1,8 @@
 from ultralytics import YOLO
-
+# 'yolov12_Leaves_Detector_run5' para entrenamiento con 500 epocas del dataset normal
 YAML_FILE = '../../config/yolo.yaml'
 PROJECT_NAME = '../../data/models/CNN'
-RUN_NAME = 'yolov12_Leaves_Detector_run4'
+RUN_NAME = 'yolov12_Leaves_Detector_run_6(with-sam3)'
 if __name__ == '__main__':
     print("hello world!")
 
@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     results = model.train(
         data=YAML_FILE,
-        epochs=100,
+        epochs=400,
         imgsz=640,
         batch=-1, # Usa el tamaño de batch máximo y seguro segun la GPU
         name=RUN_NAME,
