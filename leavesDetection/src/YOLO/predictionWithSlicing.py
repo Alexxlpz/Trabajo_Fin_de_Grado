@@ -42,17 +42,13 @@ print(f"total objetos detectados: {len(object_prediction_list)}")
 confidentList = [pred.score.value for pred in result.object_prediction_list]
 make_plot(confidentList, "confianza_predicciones_teselado_antes_del_filtrado.png")
 
-validObjects = []
-purgated = 0
-for pred in object_prediction_list:
-    if pred.bbox.maxx-pred.bbox.minx < MAX_WIDTH and pred.bbox.maxy - pred.bbox.miny < MAX_HEIGHT: # In order to try to filter, we only accept predictions smaller than the slice size (640x640)
-        validObjects.append(pred)
-    else:
-        purgated+=1
-print(f"Total de objetos purgados: {purgated}")
+#Cojemos los 10 valores con mas confianza
+validObjects = sorted(object_prediction_list, key=lambda x: x.score.value, reverse=True)
+bestItems = validObjects[:10]
+
 # actualizar la lista de predicciones que usan las visualizaciones/exportaciones
-result.object_prediction_list = validObjects
-result.prediction_list = validObjects
+result.object_prediction_list = bestItems
+result.prediction_list = bestItems
 
 # hacemos un  grafico para ver la confianza de las predicciones tras filtrar
 confidentList = [pred.score.value for pred in result.object_prediction_list]
@@ -67,6 +63,6 @@ for pred in object_prediction_list:
     print(f"------- Clase: {category}, Confianza: {score:.2f}, BBox: {bbox.to_xywh()}")
 '''
 os.makedirs(OUTPUT_IMAGE_PATH, exist_ok=True)
-result.export_visuals(export_dir=OUTPUT_IMAGE_PATH, file_name="yolov12_Leaves_Detector_run_6(with-sam3)")
+result.export_visuals(export_dir=OUTPUT_IMAGE_PATH, file_name="yolov12_Leaves_Detector_run_6(with-sam3)2")
 
 print("Proceso finalizado!!!")
