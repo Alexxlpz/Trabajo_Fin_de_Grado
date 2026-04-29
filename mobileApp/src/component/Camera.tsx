@@ -57,7 +57,7 @@ export default function Camera() {
     async function fetchPicture(base64Data: string){
             try {
                 // lo enviamos en una peticion post ya que es exageradamente larga la cadena de b64
-              const response = await fetch('http://192.168.1.114:8000/analyze', {
+              const response = await fetch('http://192.168.1.116:8000/analyze', {
                   method: 'POST',
                   headers: {
                       'Content-Type': 'application/json',
