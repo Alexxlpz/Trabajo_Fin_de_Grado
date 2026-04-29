@@ -2,11 +2,11 @@ from rembg import remove
 from PIL import Image
 import os
 
-#pathInput = '../../data/dataset/images/Pepper,_bell___healthy/'
-#pathOutput = '../../data/dataset/images_withoutBG/Pepper,_bell___healthy'
+#pathInput = '../../data/dataset/images/healthy_leaves/'
+#pathOutput = '../../data/dataset/images_withoutBG/healthy_leaves'
 
-pathInput = '../../data/dataset/images/Pepper,_bell___Bacterial_spot/'
-pathOutput = '../../data/dataset/images_withoutBG/Pepper,_bell___Bacterial_spot'
+pathInput = '../../data/dataset/images/diseased_leaves/'
+pathOutput = '../../data/dataset/images_withoutBG/diseased_leaves'
 
 os.makedirs(pathOutput, exist_ok=True)
 

@@ -8,11 +8,12 @@ from sahi.predict import get_sliced_prediction
 import os
 import time
 
+from src.backend.repository.image_repo import create_image_with_direction
 from src.utilities.classifyObject import classifyObject
 from src.utilities.makePlot import make_plot
 
 # ruta del YOLO entrenado
-YOLO_MODEL_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/models/CNN/yolov12_Leaves_Detector_run2/weights/best.pt'
+YOLO_MODEL_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/models/CNN/yolov12_Leaves_Detector_run_6(with-sam3)/weights/best.pt'
 
 # donde guardamos la imagen con la prediccion hecha
 OUTPUT_IMAGE_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/inference_results'
@@ -46,17 +47,21 @@ def get_model():
 # ---------------------------------------------------------------------------------------------------------------------
 
 def predictionSlicing(imageName: str, plots: bool = False):
-
-    teseledImagenName = f"teselado_{imageName}"
     # ruta de la imagen a predicie
     IMAGE_SOURCE = os.path.join(CACHE_PATH, imageName)
 
     detection_model = get_model()
     print("Modelo YOLO cargado exitosamente.")
 
-    result, validObjects = prediction(IMAGE_SOURCE, detection_model, plots)
+    filtered_pred_list = prediction(IMAGE_SOURCE, detection_model, plots)
 
-    encodeImage = cropAndClasify(result.object_prediction_list, IMAGE_SOURCE, CACHE_PATH)
+    encodeImage, healthy, sick = cropAndClasify(filtered_pred_list, IMAGE_SOURCE, CACHE_PATH)
+
+    save_database_entry(
+        IMAGE_SOURCE = IMAGE_SOURCE,
+        healthy = healthy,
+        sick = sick
+    )
 
     #os.makedirs(OUTPUT_IMAGE_PATH, exist_ok=True)
     #result.export_visuals(export_dir=OUTPUT_IMAGE_PATH, file_name=teseledImagenName)
@@ -67,11 +72,25 @@ def predictionSlicing(imageName: str, plots: bool = False):
     print("Proceso finalizado!!!")
     os.remove(IMAGE_SOURCE)
 
-    return teseledImagenName, encodeImage, len(validObjects)
+    return encodeImage, len(filtered_pred_list)
+
+def save_database_entry(IMAGE_SOURCE, healthy=0, sick=0):
+    lat, lon, timestamp = metainfo_collect(IMAGE_SOURCE)
+
+    img = create_image_with_direction(
+        path=IMAGE_SOURCE,
+        latitude=float(lat) if lat is not None else None,
+        longitude=float(lon) if lon is not None else None,
+        num_sick=int(sick),
+        num_healthy=int(healthy),
+        upload_date=timestamp
+    )
+
+    print(img)
+
+
 
 def prediction(IMAGE_SOURCE, detection_model, plots: bool = False):
-    MAX_HEIGHT = 640
-    MAX_WIDTH = 640
 
     # Ponemos que los teselados sean 640x640 ya que a yolo lo entrenemos asi y se le hara mas facil predecir de esa manera
     result = get_sliced_prediction(
@@ -92,19 +111,9 @@ def prediction(IMAGE_SOURCE, detection_model, plots: bool = False):
         confidentList = [pred.score.value for pred in result.object_prediction_list]
         make_plot(confidentList, "confianza_predicciones_teselado_antes_del_filtrado.png")
 
-    validObjects = []
-    purgated = 0
-    for pred in object_prediction_list:
-        if pred.bbox.maxx - pred.bbox.minx < MAX_WIDTH and pred.bbox.maxy - pred.bbox.miny < MAX_HEIGHT:  # In order to try to filter, we only accept predictions smaller than the slice size (640x640)
-            validObjects.append(pred)
-        else:
-            purgated += 1
-
-    print(f"Total de objetos purgados: {purgated}")
-    # actualizar la lista de predicciones que usan las visualizaciones/exportaciones
-
-    result.object_prediction_list = validObjects
-    result.prediction_list = validObjects
+    #filtrado
+    validObjects = sorted(object_prediction_list, key=lambda x: x.score.value, reverse=True)
+    bestItems = validObjects[:10]
 
     if plots: # guardados en /data/plots
         # hacemos un  grafico para ver la confianza de las predicciones tras filtrar
@@ -112,7 +121,7 @@ def prediction(IMAGE_SOURCE, detection_model, plots: bool = False):
         make_plot(confidentList, "confianza_predicciones_teselado_tras_filtrado.png")
 
 
-    return result, validObjects
+    return bestItems
 
 
 def cropAndClasify(predictions, image, cache_folder):
@@ -125,6 +134,8 @@ def cropAndClasify(predictions, image, cache_folder):
 
 
     saved = 0
+    healthy = 0
+    sick = 0
     for i, object_prediction in enumerate(predictions):
 
         crop, coords = cropObject(img, object_prediction)
@@ -138,9 +149,11 @@ def cropAndClasify(predictions, image, cache_folder):
         if classifyObject(crop):
             #pintamos cuadro verde
             cv2.rectangle(img, (coords[0], coords[1]), (coords[2], coords[3]), (0, 255, 0), 2)
+            healthy += 1
         else:
             #pintamos cuadro rojo
             cv2.rectangle(img, (coords[0], coords[1]), (coords[2], coords[3]), (0, 0, 255), 2)
+            sick += 1
 
     print("se han guardado "+str(saved)+" crops")
 
@@ -156,7 +169,7 @@ def cropAndClasify(predictions, image, cache_folder):
     with open(annotated_path, "rb") as f:
         annotated_b64 = base64.b64encode(f.read()).decode('utf-8')
 
-    return annotated_b64
+    return annotated_b64, healthy, sick
 
 
 
@@ -185,6 +198,21 @@ def cropObject(img, object_prediction):
     crop = img[y1:y2, x1:x2].copy()
 
     return crop, (x1, y1, x2, y2)
+
+def metainfo_collect(IMAGE_SOURCE):
+    try:
+        img = Image.open(IMAGE_SOURCE)
+        exif_data = img._getexif()
+        if exif_data is not None:
+            gps_info = exif_data.get(34853)  # GPSInfo tag
+            if gps_info is not None:
+                lat = gps_info.get(2)  # Latitude
+                lon = gps_info.get(4)  # Longitude
+                timestamp = exif_data.get(36867)  # DateTimeOriginal
+                return lat, lon, timestamp
+    except Exception as e:
+        print(f"Error al extraer metainformación: {e}")
+    return None, None, None
 
 # Funcion desarrollada ya que a veces las imagenes se guardaban con una orientacion erronea (orientada hacia los lados
 # o hacia abajo) y nosotros queremos que esten bien orientadas para una mejor prediccion

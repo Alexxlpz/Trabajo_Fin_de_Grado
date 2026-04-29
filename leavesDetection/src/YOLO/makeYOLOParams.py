@@ -8,10 +8,10 @@ ALTO = 0.8500
 
 ETIQUETA_LINEA = f"{CLASE_ID} {X_CENTRO:.4f} {Y_CENTRO:.4f} {ANCHO:.4f} {ALTO:.4f}\n"
 
-#IMAGENES_DIR = '../dataset/images/Pepper,_bell___healthy'
-#LABELS_DIR = '../dataset/labels/Pepper,_bell___healthy'
+#IMAGENES_DIR = '../dataset/images/healthy_leaves'
+#LABELS_DIR = '../dataset/labels/healthy_leaves'
 
-IMAGENES_DIR = '../../data/dataset/images/Pepper,_bell___Bacterial_spot'
+IMAGENES_DIR = '../../data/dataset/images/diseased_leaves'
 LABELS_DIR = '../../data/dataset/labels/Pepper,_bell___Bacterial_spot'
 
 # makedirs es para hacer la carpeta si no existe
