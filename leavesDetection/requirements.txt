@@ -1,3 +1,5 @@
+spglib
+sqlalchemy
 pillow-heif
 transformers
 uvicorn

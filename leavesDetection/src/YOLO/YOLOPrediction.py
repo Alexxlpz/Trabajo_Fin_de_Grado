@@ -9,7 +9,7 @@ MODELO_ENTRENADO = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDe
 CARPETA_RAIZ_RESULTADOS = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/inference_results'
 
 # 2. ESPECIFICA LA RUTA DE LA IMAGEN A PROCESAR
-IMAGEN_A_DETECTAR1 = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/dataset/dummy_images/image (2).JPG'
+IMAGEN_A_DETECTAR1 = '../../data/dataset/dummy_images/imagenReal2.jpeg'
 IMAGEN_A_DETECTAR2 = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/dataset/dummy_images/image (21).JPG'
 IMAGEN_REAL = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/dataset/dummy_images/imagenReal.JPG'
 
@@ -19,12 +19,12 @@ if __name__ == '__main__':
     print(f"Iniciando predicción en {IMAGEN_REAL}")
 
     results = model.predict(
-        source=IMAGEN_REAL,
+        source=IMAGEN_A_DETECTAR1,
         conf=0.25,
         save=True,
         device=0,
         project=CARPETA_RAIZ_RESULTADOS,
-        name='inferencia_hojas_sanas',
+        name='prueba_A',
         exist_ok=True
     )
 
