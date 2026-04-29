@@ -18,7 +18,7 @@ def on_startup():
 async def analyzeImage(imageb64: str = Body(..., embed=True)):
     name = await run_in_threadpool(recibir, imageb64)
     # dentro guardaremos informacion para la base de datos.
-    encodeImage, cont = await run_in_threadpool(predictionSlicing, "imagenReal2.jpeg")
+    encodeImage, cont = await run_in_threadpool(predictionSlicing, name, True)
 
     return {"message": "OK", "number": cont, "imageb64": encodeImage}
 

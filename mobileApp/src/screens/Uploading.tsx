@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, StyleSheet, ActivityIndicator } from 'react-native';
+import {View, Text, TouchableOpacity, Alert, StyleSheet, ActivityIndicator, Image, Modal} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
-const BASE_URL = 'http://192.168.1.114:8000/v1/drive';
-const UPLOAD_ENDPOINT = '/upload';
+const UPLOAD_URL = 'http://192.168.1.116:8000/analyze';
 
 const UploadComponent = () => {
     const [loading, setLoading] = useState(false);
-    const [status, setStatus] = useState('Listo para subir.');
-    const [fileType, setFileType] = useState('');
+
+    const [modalVisible, setModalVisible] = useState(false);
+    const [resultData, setResultData] = useState<{number: number, imageb64: string} | null>(null);
 
     const pickAndUploadFile = async () => {
         // pedimos permisos al usuario
@@ -20,79 +20,69 @@ const UploadComponent = () => {
 
         // escogemos el archivo
         const pickedResult = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.All, // Permite fotos y videos
-            allowsEditing: true,
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsEditing: false,
             quality: 1,
+            base64: true,
         });
 
         if (pickedResult.canceled) {
-            setStatus('Selección cancelada.');
             return;
         }
 
-        const { uri, type } = pickedResult.assets[0];
-        setFileType(type);
+        const { base64 } = pickedResult.assets[0];
 
         // probamos a subir el archivo
         try {
             setLoading(true);
-            setStatus(`Subiendo ${type}...`);
 
-            const downloadURL = await uploadFile(uri);
-
-            setStatus(`¡Subida exitosa! URL: ${downloadURL}...`);
-            Alert.alert('Éxito', 'El archivo ha sido subido correctamente.');
+            if (base64) {
+                await fetchPicture(base64);
+                console.log('Imagen enviada al servidor');
+            } else {
+                Alert.alert('Error', 'No se pudo procesar la imagen seleccionada.');
+            }
 
         } catch (error) {
             console.error("Error al subir el archivo:", error);
-            setStatus('Error al subir.');
             Alert.alert('Error', 'No se pudo subir el archivo.');
         } finally {
             setLoading(false);
         }
     };
-    const uploadFile = async (localUri:string) => {
 
-        let filename = localUri.split('/').pop();
-        let typeMatch = /\.(\w+)$/.exec(filename);
-        let type = typeMatch ? `${fileType}/${typeMatch[1]}` : fileType;
+    async function fetchPicture(base64Data: string){
+            try {
+                // lo enviamos en una peticion post ya que es exageradamente larga la cadena de b64
+              const response = await fetch(UPLOAD_URL, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ imageb64: base64Data }),
+              });
 
-        const formData = new FormData();
-        formData.append('file', {
-            uri: localUri,
-            name: filename,
-            type: type // (ej: 'image/jpeg' o 'video/mp4')
-        } as any);
+              if (!response.ok) {
+                  Alert.alert('Error', `La respuesta del servidor no es correcta (Status: ${response.status})`);
+                  return;
+              }
 
-        const fullUrl = `${BASE_URL}${UPLOAD_ENDPOINT}`;
+              const result = await response.json();
+               console.log('Respuesta del servidor recibida');
 
-        try {
-            const response = await fetch(fullUrl, {
-                method: 'POST',
-                body: formData,//El tipo lo detecta fastapi automáticamente
-            });
+               // Guardamos los datos y mostramos el modal
+               setResultData(result);
+               setModalVisible(true);
 
-            const result = await response.json();
-            console.log(result);
-
-            if (response.ok) {
-                console.log("Subida exitosa:", result);
-                alert("Archivo subido con éxito!");
-            } else {
-                console.error("Error del servidor:", result);
-                alert("Error al subir el archivo.");
+            } catch (error) {
+              console.error(error);
+              Alert.alert('Error de conexión', 'No se pudo conectar con el servidor.');
             }
-
-        } catch (error) {
-            console.error("Error de red/conexión:", error);
-            alert("No se pudo conectar al servidor.");
-        }
-    };
+    }
 
     return (
         <View style={styles.container}>
         <Text style={styles.header}>Subir Multimedia</Text>
-        <Text style={styles.status}>{status}</Text>
         <TouchableOpacity
             style={styles.uploadButton}
             onPress={pickAndUploadFile}
@@ -104,8 +94,31 @@ const UploadComponent = () => {
                     <Text style={styles.buttonText}>+</Text>
                     )}
         </TouchableOpacity>
+            <Modal visible={modalVisible} transparent={true} animationType="slide">
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Análisis Completado</Text>
 
-        {fileType ? <Text style={styles.fileType}>Tipo seleccionado: {fileType}</Text> : null}
+                        {resultData && (
+                            <>
+                                <Image
+                                    source={{ uri: `data:image/jpeg;base64,${resultData.imageb64}` }} // NO NOS HACE FALTA DESCODIFICAR, REACT NATIVE LO HACE AUTOMATICAMENTE
+
+                                    style={styles.resultImage}
+                                    resizeMode="contain"
+                                />
+                                <Text style={styles.modalText}>Hojas detectadas: {resultData.number}</Text>
+                            </>
+                        )}
+
+                        <TouchableOpacity
+                            onPress={() => setModalVisible(false)}
+                            style={styles.closeButton}>
+                            <Text style={styles.closeButtonText}>Cerrar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </View>
         );
     };
@@ -122,11 +135,6 @@ const UploadComponent = () => {
             fontSize: 24,
             fontWeight: 'bold',
             marginBottom: 20,
-        },
-        status: {
-            marginBottom: 30,
-            color: '#333',
-            textAlign: 'center',
         },
         uploadButton: {
             backgroundColor: '#007AFF', // Azul para el botón de acción
@@ -150,6 +158,44 @@ const UploadComponent = () => {
             marginTop: 20,
             fontSize: 14,
             color: '#666',
+        },
+        modalOverlay: {
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(0,0,0,0.7)'
+        },modalContent: {
+            backgroundColor: 'white',
+            padding: 20,
+            borderRadius: 20,
+            alignItems: 'center',
+            width: '85%',
+            maxHeight: '80%'
+        },
+        modalTitle: {
+            fontSize: 20,
+            fontWeight: 'bold',
+            marginBottom: 15
+        },
+        resultImage: {
+            width: '100%',
+            height: 300,
+            borderRadius: 10,
+            marginBottom: 15,
+        },
+        modalText: {
+            fontSize: 18,
+            marginBottom: 20,
+        },
+        closeButton: {
+            backgroundColor: '#2196F3',
+            paddingHorizontal: 30,
+            paddingVertical: 10,
+            borderRadius: 10
+        },
+        closeButtonText: {
+            color: 'white',
+            fontWeight: 'bold'
         }
     });
 

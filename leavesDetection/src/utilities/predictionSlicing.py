@@ -20,6 +20,8 @@ OUTPUT_IMAGE_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesD
 
 CACHE_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/cache'
 
+DEBUG_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/inference_results/debug'
+
 _MODEL = None
 
 def get_model():
@@ -46,16 +48,17 @@ def get_model():
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-def predictionSlicing(imageName: str, plots: bool = False):
+def predictionSlicing(imageName: str, debug_mode: bool = False):
     # ruta de la imagen a predicie
     IMAGE_SOURCE = os.path.join(CACHE_PATH, imageName)
+    threshold = 0.85
 
     detection_model = get_model()
     print("Modelo YOLO cargado exitosamente.")
 
-    filtered_pred_list = prediction(IMAGE_SOURCE, detection_model, plots)
+    filtered_pred_list = prediction(IMAGE_SOURCE, detection_model, threshold, debug_mode)
 
-    encodeImage, healthy, sick = cropAndClasify(filtered_pred_list, IMAGE_SOURCE, CACHE_PATH)
+    encodeImage, healthy, sick = cropAndClasify(filtered_pred_list, IMAGE_SOURCE, CACHE_PATH, debug_mode)
 
     save_database_entry(
         IMAGE_SOURCE = IMAGE_SOURCE,
@@ -90,7 +93,7 @@ def save_database_entry(IMAGE_SOURCE, healthy=0, sick=0):
 
 
 
-def prediction(IMAGE_SOURCE, detection_model, plots: bool = False):
+def prediction(IMAGE_SOURCE, detection_model, threshold: float = 0.85, debug_mode: bool = False):
 
     # Ponemos que los teselados sean 640x640 ya que a yolo lo entrenemos asi y se le hara mas facil predecir de esa manera
     result = get_sliced_prediction(
@@ -104,27 +107,44 @@ def prediction(IMAGE_SOURCE, detection_model, plots: bool = False):
 
     object_prediction_list = result.object_prediction_list
 
+    if debug_mode:
+        tiled_basename = f"YOLO_PREDICTION_{os.path.splitext(os.path.basename(IMAGE_SOURCE))[0]}"
+        try:
+            result.export_visuals(export_dir=DEBUG_PATH, file_name=tiled_basename)
+            print(f"Visuales exportados en `{DEBUG_PATH}` con prefijo `{tiled_basename}`")
+        except Exception as e:
+            print(f"Error exportando visuales: {e}")
+
+        confidentList = [pred.score.value for pred in result.object_prediction_list]
+        make_plot(confidentList, "confianza_predicciones_teselado_antes_del_filtrado_testing.png")
+
     print(f"total objetos detectados: {len(object_prediction_list)}")
 
-    if plots: # guardados en /data/plots
-        # hacemos un  grafico para ver la confianza de las predicciones tras filtrar
-        confidentList = [pred.score.value for pred in result.object_prediction_list]
-        make_plot(confidentList, "confianza_predicciones_teselado_antes_del_filtrado.png")
 
     #filtrado
-    validObjects = sorted(object_prediction_list, key=lambda x: x.score.value, reverse=True)
+    validObjects = [pred for pred in object_prediction_list if pred.score.value >= threshold]
+    validObjects = sorted(validObjects, key=lambda x: x.score.value, reverse=True)
     bestItems = validObjects[:10]
+    result.object_prediction_list = bestItems
 
-    if plots: # guardados en /data/plots
+    if debug_mode:
+        #Guardamos lo que ha visto el modelo filtrado
+        tiled_basename = f"YOLO_PREDICTION_{os.path.splitext(os.path.basename(IMAGE_SOURCE))[0]}_FILTERED"
+        try:
+            result.export_visuals(export_dir=DEBUG_PATH, file_name=tiled_basename)
+            print(f"Visuales exportados en `{DEBUG_PATH}` con prefijo `{tiled_basename}`")
+        except Exception as e:
+            print(f"Error exportando visuales: {e}")
+
         # hacemos un  grafico para ver la confianza de las predicciones tras filtrar
         confidentList = [pred.score.value for pred in result.object_prediction_list]
-        make_plot(confidentList, "confianza_predicciones_teselado_tras_filtrado.png")
+        make_plot(confidentList, "confianza_predicciones_teselado_despues_del_filtrado_testing.png")
 
 
     return bestItems
 
 
-def cropAndClasify(predictions, image, cache_folder):
+def cropAndClasify(predictions, image, cache_folder, debugg_mode: bool = False):
     output_folder = os.path.join(cache_folder, "crops")
     os.makedirs(output_folder, exist_ok=True)
 
@@ -147,13 +167,27 @@ def cropAndClasify(predictions, image, cache_folder):
                                                                                 #al clasificador y que se encargue el
                                                                                 #otro archivo
         if classifyObject(crop):
+            if debugg_mode:
+                    # guardamos el crop para debuggear el clasificador
+                    filename = f"crop_{i}.jpg"
+                    out_path = os.path.join(DEBUG_PATH, filename)
+                    cv2.imwrite(out_path, crop, [cv2.IMWRITE_JPEG_QUALITY, int(100)])
+
             #pintamos cuadro verde
             cv2.rectangle(img, (coords[0], coords[1]), (coords[2], coords[3]), (0, 255, 0), 2)
             healthy += 1
         else:
+            if debugg_mode:
+                    # guardamos el crop para debuggear el clasificador
+                    filename = f"crop_{i}.jpg"
+                    out_path = os.path.join(DEBUG_PATH, filename)
+                    cv2.imwrite(out_path, crop, [cv2.IMWRITE_JPEG_QUALITY, int(100)])
+
             #pintamos cuadro rojo
             cv2.rectangle(img, (coords[0], coords[1]), (coords[2], coords[3]), (0, 0, 255), 2)
             sick += 1
+
+        saved += 1
 
     print("se han guardado "+str(saved)+" crops")
 
