@@ -1,31 +1,128 @@
 import React from 'react';
-import { Text, View, StyleSheet, Button } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity, ImageBackground, SafeAreaView } from "react-native";
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 const HomeScreen = ({ navigation }) => {
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}> titulo</Text>
-            <Button
-                title="Grabar Video"
-                onPress={() => navigation.navigate('Recording')}
-            />
-            <Button
-                title="Subir archivo"
-                onPress={() => navigation.navigate('Uploading')}
-            />
-        </View>
+        <ImageBackground
+            source={ require('../../assets/home_background.jpg') }
+            style={styles.background}
+            blurRadius={4}
+        >
+            <View style={styles.overlay}>
+                <View style={styles.container}>
+                    <View style={styles.buttonsContainer}>
+
+                        <TouchableOpacity
+                            style={styles.primaryButton}
+                            onPress={() => navigation.navigate('Recording')}
+                        >
+                            <Ionicons name="camera-outline" size={22} color="#FFFFFF" style={styles.buttonIcon} />
+                            <Text style={styles.primaryButtonText}>Cámara</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.secondaryButton}
+                            onPress={() => navigation.navigate('Uploading')}
+                        >
+                            <Ionicons name="cloud-upload-outline" size={22} color="#00875A" style={styles.buttonIcon} />
+                            <Text style={styles.secondaryButtonText}>Subir Archivo</Text>
+                        </TouchableOpacity>
+
+                    </View>
+                </View>
+            </View>
+        </ImageBackground>
     );
 }
 
 const styles = StyleSheet.create({
+    background: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+    },
+    overlay: {
+        flex: 1,
+        backgroundColor: 'rgba(255, 255, 255, 0.65)', // Superposición blanca translúcida
+    },
     container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        gap: 10
+        paddingHorizontal: 30,
+    },
+    topSection: {
+        alignItems: 'center',
+        marginBottom: 80, // Separación entre títulos y botones
+    },
+    iconCircle: {
+        width: 110,
+        height: 110,
+        borderRadius: 55,
+        backgroundColor: '#D1F2E0', // Verde muy claro
+        borderWidth: 3,
+        borderColor: '#E8F8F0', // Borde casi blanco
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 15,
+        // Sombra
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 5,
+        elevation: 5,
     },
     title: {
-        fontSize: 20
+        fontSize: 32,
+        fontWeight: '900',
+        color: '#004D40',
+        marginBottom: 8,
+    },
+    subtitle: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#007A5E',
+    },
+    buttonsContainer: {
+        width: '100%',
+        gap: 18, // Espaciado nativo entre botones
+    },
+    primaryButton: {
+        flexDirection: 'row',
+        backgroundColor: '#00875A',
+        paddingVertical: 16,
+        borderRadius: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+        elevation: 3,
+    },
+    primaryButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    secondaryButton: {
+        flexDirection: 'row',
+        backgroundColor: '#FFFFFF',
+        paddingVertical: 16,
+        borderRadius: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: '#00875A',
+    },
+    secondaryButtonText: {
+        color: '#00875A',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    buttonIcon: {
+        marginRight: 8,
     }
 });
 
