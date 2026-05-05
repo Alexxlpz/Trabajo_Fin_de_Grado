@@ -7,10 +7,10 @@ from sahi import AutoDetectionModel
 from sahi.predict import get_sliced_prediction
 import os
 import time
-
 from src.backend.repository.image_repo import create_image_with_direction
 from src.utilities.classifyObject import classifyObject
 from src.utilities.makePlot import make_plot
+from src.utilities.metainfoCollect import metainfo_collect
 
 # ruta del YOLO entrenado
 YOLO_MODEL_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/models/CNN/yolov12_Leaves_Detector_run_6(with-sam3)/weights/best.pt'
@@ -80,13 +80,15 @@ def predictionSlicing(imageName: str, debug_mode: bool = False):
 def save_database_entry(IMAGE_SOURCE, healthy=0, sick=0):
     lat, lon, timestamp = metainfo_collect(IMAGE_SOURCE)
 
+    print(f"Metainformación procesada - Lat: {lat}, Lon: {lon}, Fecha: {timestamp}")
+
     img = create_image_with_direction(
         path=IMAGE_SOURCE,
-        latitude=float(lat) if lat is not None else None,
-        longitude=float(lon) if lon is not None else None,
+        latitude=lat,
+        longitude=lon,
         num_sick=int(sick),
         num_healthy=int(healthy),
-        upload_date=timestamp
+        upload_date=timestamp  # Ahora el formato es compatible con SQL
     )
 
     print(img)
@@ -232,21 +234,6 @@ def cropObject(img, object_prediction):
     crop = img[y1:y2, x1:x2].copy()
 
     return crop, (x1, y1, x2, y2)
-
-def metainfo_collect(IMAGE_SOURCE):
-    try:
-        img = Image.open(IMAGE_SOURCE)
-        exif_data = img._getexif()
-        if exif_data is not None:
-            gps_info = exif_data.get(34853)  # GPSInfo tag
-            if gps_info is not None:
-                lat = gps_info.get(2)  # Latitude
-                lon = gps_info.get(4)  # Longitude
-                timestamp = exif_data.get(36867)  # DateTimeOriginal
-                return lat, lon, timestamp
-    except Exception as e:
-        print(f"Error al extraer metainformación: {e}")
-    return None, None, None
 
 # Funcion desarrollada ya que a veces las imagenes se guardaban con una orientacion erronea (orientada hacia los lados
 # o hacia abajo) y nosotros queremos que esten bien orientadas para una mejor prediccion

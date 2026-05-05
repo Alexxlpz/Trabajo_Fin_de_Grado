@@ -16,19 +16,53 @@ export default function App() {
           <Stack.Screen
               name="Home"
               component={HomeScreen}
-              options={{ title: 'Inicio' }}
+              options={{
+                  title: 'Home',
+                  headerStyle: { backgroundColor: styles.header.backgroundColor },
+                  headerTintColor: styles.headerText.color,
+                  headerTitleStyle: { fontWeight: 'bold' },
+                  headerTitleAlign: 'center',
+                  headerShadowVisible: true,
+              }}
           />
           <Stack.Screen
               name="Recording"
               component={RecoringScreen}
+              options={{
+                  headerStyle: { backgroundColor: styles.header.backgroundColor },
+                  headerTintColor: styles.headerText.color,
+                  headerTitleStyle: { fontWeight: 'bold' },
+                  headerTitleAlign: 'center',
+                  headerShadowVisible: true,
+              }}
               //options={{ headerShown: false }}¿¿¿???
           />
           <Stack.Screen
               name="Uploading"
               component={Uploading}
-              options={{ title: 'Subir archivo' }}
+              options={{
+                  headerStyle: { backgroundColor: styles.header.backgroundColor },
+                  headerTintColor: styles.headerText.color,
+                  headerTitleStyle: { fontWeight: 'bold' },
+                  headerTitleAlign: 'center',
+                  headerShadowVisible: true,
+              }}
           />
       </Stack.Navigator>
     </NavigationContainer>
   );
+}
+
+const styles = {
+    header: {
+        backgroundColor: '#00875A', // Color verde oscuro de la barra
+        paddingTop: 45, // Espacio para la barra de estado del móvil
+        paddingBottom: 15,
+        paddingHorizontal: 20,
+    },
+    headerText: {
+        color: '#FFFFFF',
+        fontSize: 18,
+        fontWeight: 'bold',
+    }
 }
