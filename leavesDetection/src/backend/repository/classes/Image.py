@@ -12,8 +12,8 @@ class Image(Base):
     upload_date = Column(DateTime) # todo no estaba puesto pero la fecha de subida puede ser util
 
     # Claves foráneas
-    #user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
 
     # Relaciones
-    #user = relationship("User", back_populates="images")
+    user = relationship("User", back_populates="images")
     direction = relationship("Direction", back_populates="image", uselist=False)

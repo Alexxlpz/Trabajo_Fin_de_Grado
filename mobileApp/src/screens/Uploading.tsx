@@ -1,25 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
     View, Text, TouchableOpacity, Alert, StyleSheet,
     ActivityIndicator, Image, Modal, ImageBackground,
-    FlatList, ScrollView
+    FlatList, ScrollView, Dimensions
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { IP_ADDRESS } from "@env";
+import { useSession } from '../SessionContext';
 
 const UPLOAD_URL = `http://${IP_ADDRESS}:8000/analyze`;
 
-const RECENT_PHOTOS_MOCK = [
-    {id: 1, path: 'https://imgs.search.brave.com/lqKlU24lyWlGN_rPg8nNbo5OEPP109Pw0x34pJQZ7Hk/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/YnJpbGxhbnRlLmVz/L3dwLWNvbnRlbnQv/dXBsb2Fkcy8yMDI0/LzEyL1BpbWllbnRv/cy1sb2Rvc2EtMS5q/cGc'},
-    {id: 2, path: 'https://imgs.search.brave.com/miErJhVhF_RvZdbbKDA3mhv90m7Quvs7Npyxuvu_gAQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/aHVlcnRhYmFyYmVy/ZXRhLmNvbS8xNTMt/bGFyZ2VfZGVmYXVs/dC8yNS1wbGFudGFz/LWRlLXBpbWllbnRv/LWl0YWxpYW5vLmpw/Zw'},
-    {id: 3, path: 'https://imgs.search.brave.com/jDCmLyl1-gOqhfLf11zm-LdcK1XhQId6PlIes1x_eQc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZXJ0/aXNiZWxjaGltLmVz/L3dwLWNvbnRlbnQv/dXBsb2Fkcy8yMDIz/LzAxL1NpbnRvbWFz/X2RlX29pZGlvX2Vu/X3BsYW50YV9kZV9w/aW1pZW50by5qcGc'}
-];
-
-interface Photo {
-    id: number;
-    path: string;
-}
 
 interface DetectionResult {
     leaf_count: number;
@@ -27,13 +18,23 @@ interface DetectionResult {
 }
 
 const UploadingScreen = ({ navigation }: any) => {
+    const { recents, setRecents } = useSession();
     const [loading, setLoading] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [resultData, setResultData] = useState<DetectionResult | null>(null);
-    const [recentPhotos, setRecentPhotos] = useState(RECENT_PHOTOS_MOCK);
+    const [recentPhotos, setRecentPhotos] = useState<Base64URLString[]>([]);
+    const [galleryModalVisible, setGalleryModalVisible] = useState(false);
+    const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+    const flatListRef = useRef<FlatList<any> | null>(null);
+    const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
 
-    function addToRecentPhotos(newPhotoUri: Photo) {
-        setRecentPhotos(prev => [newPhotoUri, ...prev.slice(0, 4)]); // Mantiene solo los 5 más recientes
+    useEffect(() => {
+        setRecentPhotos(recents);
+    }, [recents]);
+
+    function addPhotoToRecents(newPhotoBase64: Base64URLString) {
+        const newPhoto: Base64URLString = newPhotoBase64;
+        setRecents((prev: [Base64URLString] | any[]) => [newPhoto, ...prev.slice(0, 4)]); // Mantiene solo los 5 más recientes
     }
 
     const uploadFile = async (base64Data: string) => {
@@ -45,23 +46,6 @@ const UploadingScreen = ({ navigation }: any) => {
             Alert.alert('Error', 'No se pudo subir el archivo.');
         } finally {
             setLoading(false);
-        }
-    }
-
-    const uploadFileFromUri = async (uri: string) => {
-        try {
-            setLoading(true);
-            const response = await fetch(uri);
-            const blob = await response.blob();
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64data = reader.result as string;
-                const base64String = base64data.split(',')[1]; // eliminamos el prefijo data:image/jpeg;base64,
-                uploadFile(base64String);
-            };
-            reader.readAsDataURL(blob);
-        }catch (error) {
-            Alert.alert('Error', 'No se pudo subir el archivo desde URI.');
         }
     }
 
@@ -84,7 +68,6 @@ const UploadingScreen = ({ navigation }: any) => {
         const { base64, uri } = pickedResult.assets[0];
 
         if (base64) {
-            addToRecentPhotos({ id: Date.now(), path: uri });
             await uploadFile(base64);
         }
     };
@@ -107,6 +90,7 @@ const UploadingScreen = ({ navigation }: any) => {
                 };
                 setResultData(result);
                 setModalVisible(true);
+                addPhotoToRecents(result.image_base64);
             } else {
                 Alert.alert('Error', 'Respuesta inesperada del servidor');
                 console.error('Respuesta inválida del servidor:', jsonRecived);
@@ -140,10 +124,13 @@ const UploadingScreen = ({ navigation }: any) => {
                             data={recentPhotos}
                             horizontal
                             showsHorizontalScrollIndicator={false}
-                            keyExtractor={(item) => item.id.toString()}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity onPress={() => uploadFileFromUri(item.path)}>
-                                    <Image source={{ uri: item.path }} style={styles.recentImage} />
+                            keyExtractor={(item, index) => String(index)}
+                            renderItem={({ item, index }) => (
+                                <TouchableOpacity onPress={() => {
+                                    setSelectedPhotoIndex(index);
+                                    setGalleryModalVisible(true);
+                                }}>
+                                    <Image source={{ uri: `data:image/jpeg;base64,${item}` }} style={styles.recentImage} />
                                 </TouchableOpacity>
                             )}
                         />
@@ -170,6 +157,50 @@ const UploadingScreen = ({ navigation }: any) => {
                             onPress={() => setModalVisible(false)}
                             style={styles.closeButton}>
                             <Text style={styles.closeButtonText}>Cerrar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+            <Modal visible={galleryModalVisible} transparent={true} animationType="fade">
+                <View style={styles.galleryOverlay}>
+                    <FlatList
+                        ref={(ref) => { flatListRef.current = ref as any; }}
+                        data={recentPhotos}
+                        horizontal
+                        pagingEnabled
+                        initialScrollIndex={selectedPhotoIndex}
+                        getItemLayout={(_, index) => ({ length: windowWidth, offset: windowWidth * index, index })}
+                        keyExtractor={(item, index) => String(index)}
+                        renderItem={({ item, index }) => (
+                            <View style={[styles.galleryItem, { width: windowWidth, height: windowHeight }]}> 
+                                <Image
+                                    source={{ uri: `data:image/jpeg;base64,${item}` }}
+                                    style={[styles.fullImage, { width: windowWidth, height: windowHeight * 0.85 }]}
+                                    resizeMode="contain"
+                                />
+                            </View>
+                        )}
+                    />
+
+                    <TouchableOpacity style={styles.galleryClose} onPress={() => setGalleryModalVisible(false)}>
+                        <Ionicons name="close" size={34} color="#fff" />
+                    </TouchableOpacity>
+
+                    <View style={styles.galleryNavRow} pointerEvents="box-none">
+                        <TouchableOpacity style={styles.galleryNavButton} onPress={() => {
+                            const prev = Math.max(0, selectedPhotoIndex - 1);
+                            setSelectedPhotoIndex(prev);
+                            flatListRef.current?.scrollToIndex({ index: prev, animated: true });
+                        }}>
+                            <Ionicons name="chevron-back" size={36} color="#fff" />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.galleryNavButton} onPress={() => {
+                            const next = Math.min(recentPhotos.length - 1, selectedPhotoIndex + 1);
+                            setSelectedPhotoIndex(next);
+                            flatListRef.current?.scrollToIndex({ index: next, animated: true });
+                        }}>
+                            <Ionicons name="chevron-forward" size={36} color="#fff" />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -242,6 +273,12 @@ const styles = StyleSheet.create({
     modalText: { fontSize: 18, marginBottom: 20 },
     closeButton: { backgroundColor: '#00875A', paddingHorizontal: 40, paddingVertical: 12, borderRadius: 15 },
     closeButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+    galleryOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.95)', justifyContent: 'center', alignItems: 'center' },
+    galleryItem: { justifyContent: 'center', alignItems: 'center' },
+    fullImage: { borderRadius: 12 },
+    galleryClose: { position: 'absolute', top: 48, right: 20, zIndex: 20 },
+    galleryNavRow: { position: 'absolute', bottom: 40, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 30, alignItems: 'center' },
+    galleryNavButton: { backgroundColor: 'rgba(0,0,0,0.35)', padding: 10, borderRadius: 30 },
 });
 
 export default UploadingScreen;

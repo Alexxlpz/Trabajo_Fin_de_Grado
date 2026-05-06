@@ -1,14 +1,23 @@
-from fastapi import FastAPI, Body
+from fastapi import FastAPI, Body, Depends
 from fastapi.concurrency import run_in_threadpool
 import base64
-from src.backend.repository.database import init_db
+
+from sqlalchemy.orm import Session
+
+from src.backend.Schemas.LoginSchema import LoginSchema
+from src.backend.repository.database import init_db, get_db
 
 # para el teselado y la clasificacion de yolo
 import os
+
+from src.backend.repository.user_repo import authenticate_and_get_recent_paths, \
+    register_authenticate_and_get_recent_paths
 from src.utilities.predictionSlicing import predictionSlicing
 
 
 app = FastAPI()
+
+_SESSION:int = -1
 
 @app.on_event("startup")
 def on_startup():
@@ -18,9 +27,26 @@ def on_startup():
 async def analyzeImage(imageb64: str = Body(..., embed=True)):
     name = await run_in_threadpool(recibir, imageb64)
     # dentro guardaremos informacion para la base de datos.
-    encodeImage, cont = await run_in_threadpool(predictionSlicing, name, False)
+    encodeImage, cont = await run_in_threadpool(predictionSlicing, name, _SESSION, False)
 
     return {"message": "OK", "leaf_count": cont, "image_base64": encodeImage}
+
+@app.post("/login")
+async def login(data: LoginSchema, db: Session = Depends(get_db)):
+
+    message, recent_list, userid = authenticate_and_get_recent_paths(db, data.email, data.password)
+    save_session(userid)
+    return {"message": message, "recent_list": recent_list} # todo cambiar el nombre, messahe no es muy representativo
+
+@app.post("/register")
+async def register(data: LoginSchema, db: Session = Depends(get_db)):
+    message, recent_list, userid = register_authenticate_and_get_recent_paths(db, data.email, data.password)
+    save_session(userid)
+    return {"message": message, "recent_list": recent_list}
+
+def save_session(session):
+    global _SESSION
+    _SESSION = session
 
 def recibir(imageb64: str):
     image_data = base64.b64decode(imageb64)
