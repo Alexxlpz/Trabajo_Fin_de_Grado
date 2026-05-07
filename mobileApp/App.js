@@ -1,55 +1,73 @@
 import React from 'react';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 
 // Importamos las pantallas entre las que navegaremos
 import HomeScreen from './src/screens/HomeScreen';
 import RecoringScreen from './src/screens/Recording';
 import Uploading from "./src/screens/Uploading";
+import Login from "./src/screens/Login";
+import Register from "./src/screens/Register";
+import { SessionProvider } from './src/SessionContext';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
+    <SessionProvider>
+      <NavigationContainer>
+      <Stack.Navigator
+        initialRouteName="Home"
+        screenOptions={({ navigation }) => ({
+            headerStyle: { 
+                backgroundColor: '#00875A',
+                elevation: 0,
+                shadowOpacity: 0,
+            },
+            headerTintColor: styles.headerText.color,
+            headerTitleStyle: { fontWeight: 'bold' },
+            headerTitleAlign: 'center',
+            headerShadowVisible: true,
+            headerRight: () => (
+                <TouchableOpacity 
+                    activeOpacity={0.7}
+                    onPress={() => navigation.navigate('Login')}
+                >
+                    <Ionicons name="person-circle-outline" size={38} color="white" />
+                </TouchableOpacity>
+            ),
+        })}
+      >
           <Stack.Screen
               name="Home"
               component={HomeScreen}
-              options={{
-                  title: 'Home',
-                  headerStyle: { backgroundColor: styles.header.backgroundColor },
-                  headerTintColor: styles.headerText.color,
-                  headerTitleStyle: { fontWeight: 'bold' },
-                  headerTitleAlign: 'center',
-                  headerShadowVisible: true,
-              }}
+              options={{ title: 'Inicio' }}
           />
           <Stack.Screen
               name="Recording"
               component={RecoringScreen}
-              options={{
-                  headerStyle: { backgroundColor: styles.header.backgroundColor },
-                  headerTintColor: styles.headerText.color,
-                  headerTitleStyle: { fontWeight: 'bold' },
-                  headerTitleAlign: 'center',
-                  headerShadowVisible: true,
-              }}
-              //options={{ headerShown: false }}¿¿¿???
+              options={{ title: 'Grabar' }}
           />
           <Stack.Screen
               name="Uploading"
               component={Uploading}
-              options={{
-                  headerStyle: { backgroundColor: styles.header.backgroundColor },
-                  headerTintColor: styles.headerText.color,
-                  headerTitleStyle: { fontWeight: 'bold' },
-                  headerTitleAlign: 'center',
-                  headerShadowVisible: true,
-              }}
+              options={{ title: 'Subiendo' }}
+          />
+          <Stack.Screen
+              name="Login"
+              component={Login}
+              options={{ title: 'Iniciar Sesión' }}
+          />
+          <Stack.Screen
+              name="Register"
+              component={Register}
+              options={{ title: 'Crear Cuenta' }}
           />
       </Stack.Navigator>
     </NavigationContainer>
+    </SessionProvider>
   );
 }
 

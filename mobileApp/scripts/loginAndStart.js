@@ -1,7 +1,12 @@
 import {join} from 'path';
-// Buscamos el .env en la raíz del proyecto (un nivel arriba de /scripts)
-require('dotenv').config({path: join(__dirname, '..', '.env')});
+import {fileURLToPath} from 'url';
 import {spawnSync} from 'child_process';
+import dotenv from 'dotenv';
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
+// Buscamos el .env en la raíz del proyecto (un nivel arriba de /scripts)
+dotenv.config({path: join(__dirname, '..', '.env')});
 
 const user = process.env.EXPO_USER;
 const pass = process.env.EXPO_PASS;

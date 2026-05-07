@@ -1,8 +1,11 @@
 import React from 'react';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Text, View, StyleSheet, TouchableOpacity, ImageBackground, SafeAreaView } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
-const HomeScreen = ({ navigation }) => {
+type HomeScreenNavigationProp = NativeStackNavigationProp<any>;
+
+const HomeScreen = ({ navigation }: { navigation: HomeScreenNavigationProp }) => {
     return (
         <ImageBackground
             source={ require('../../assets/home_background.jpg') }

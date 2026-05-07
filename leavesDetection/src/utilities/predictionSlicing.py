@@ -48,7 +48,7 @@ def get_model():
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-def predictionSlicing(imageName: str, debug_mode: bool = False):
+def predictionSlicing(imageName: str, session: int, debug_mode: bool = False):
     # ruta de la imagen a predicie
     IMAGE_SOURCE = os.path.join(CACHE_PATH, imageName)
     threshold = 0.85
@@ -58,10 +58,11 @@ def predictionSlicing(imageName: str, debug_mode: bool = False):
 
     filtered_pred_list = prediction(IMAGE_SOURCE, detection_model, threshold, debug_mode)
 
-    encodeImage, healthy, sick = cropAndClasify(filtered_pred_list, IMAGE_SOURCE, CACHE_PATH, debug_mode)
+    encodeImage, annotated_path, healthy, sick = cropAndClasify(filtered_pred_list, IMAGE_SOURCE, CACHE_PATH, debug_mode)
 
     save_database_entry(
-        IMAGE_SOURCE = IMAGE_SOURCE,
+        IMAGE_SOURCE = annotated_path,
+        session=session,
         healthy = healthy,
         sick = sick
     )
@@ -77,7 +78,7 @@ def predictionSlicing(imageName: str, debug_mode: bool = False):
 
     return encodeImage, len(filtered_pred_list)
 
-def save_database_entry(IMAGE_SOURCE, healthy=0, sick=0):
+def save_database_entry(IMAGE_SOURCE, session:int, healthy=0, sick=0):
     lat, lon, timestamp = metainfo_collect(IMAGE_SOURCE)
 
     print(f"Metainformación procesada - Lat: {lat}, Lon: {lon}, Fecha: {timestamp}")
@@ -86,6 +87,7 @@ def save_database_entry(IMAGE_SOURCE, healthy=0, sick=0):
         path=IMAGE_SOURCE,
         latitude=lat,
         longitude=lon,
+        user_id=session,
         num_sick=int(sick),
         num_healthy=int(healthy),
         upload_date=timestamp  # Ahora el formato es compatible con SQL
@@ -205,7 +207,7 @@ def cropAndClasify(predictions, image, cache_folder, debugg_mode: bool = False):
     with open(annotated_path, "rb") as f:
         annotated_b64 = base64.b64encode(f.read()).decode('utf-8')
 
-    return annotated_b64, healthy, sick
+    return annotated_b64, annotated_path, healthy, sick
 
 
 

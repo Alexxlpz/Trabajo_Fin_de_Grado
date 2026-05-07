@@ -15,6 +15,7 @@ import {
 import { Fontisto } from '@expo/vector-icons';
 import Constants from "expo-constants";
 import { IP_ADDRESS } from "@env";
+import { useSession } from '../SessionContext';
 
 interface DetectionResult {
     leaf_count: number;
@@ -22,6 +23,7 @@ interface DetectionResult {
 }
 
 export default function Camera() {
+    const { recents, setRecents } = useSession();
     const [recording, setRecording] = useState<boolean>(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [resultData, setResultData] = useState<DetectionResult | null>(null); // guardamos el return que nos devuelve el backend, que contiene el numero de objetos detectados y la imagen en b64
@@ -51,6 +53,11 @@ export default function Camera() {
                 <Button onPress={requestPermission} title="grant permission" />
             </View>
         );
+    }
+
+    function addPhotoToRecents(newPhotoBase64: Base64URLString) {
+        const newPhoto: Base64URLString = newPhotoBase64;
+        setRecents((prev: [Base64URLString] | any[]) => [newPhoto, ...prev.slice(0, 4)]); // Mantiene solo los 5 más recientes
     }
 
     function toggleCameraRecording(){
@@ -95,7 +102,7 @@ export default function Camera() {
                  //console.log(data);
                  if (data !== null) {
                      //console.log('antes de enviar la imagen');
-                     await fetchPicture(data.base64);
+                     await fetchPicture(data.base64!);
                      setLoading(false);
                      console.log('Imagen enviada al servidor');
                  }
@@ -133,6 +140,7 @@ export default function Camera() {
                     };
                     setResultData(result);
                     setModalVisible(true);
+                    addPhotoToRecents(result.image_base64);
                 } else {
                     Alert.alert('Error', 'Respuesta inesperada del servidor');
                     console.error('Respuesta inválida del servidor:', jsonRecived);
