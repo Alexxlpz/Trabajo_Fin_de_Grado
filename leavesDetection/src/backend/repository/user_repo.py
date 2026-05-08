@@ -19,11 +19,11 @@ def authenticate_and_get_recent_paths(db: Session, email: EmailStr, password: st
 
     return True, recents, user
 
-def register_authenticate_and_get_recent_paths(db: Session, email: EmailStr, password: str):
+def register_authenticate_and_get_recent_paths(db: Session, email: EmailStr, password: str, username: str):
     user = db.query(User).filter(User.email == email).first()
 
     if not user:
-        new_user = User(email=str(email), password=password, username=str(email).split("@")[0])
+        new_user = User(email=str(email), password=password, username=username)
         db.add(new_user)
         db.commit()
         db.refresh(new_user)

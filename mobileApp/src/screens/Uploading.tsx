@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 10,
     },
-    dashedText: { color: '#004D40', fontSize: 16, fontWeight: '500' },
+    dashedText: { color: '#004D40', fontSize: 16, fontWeight: '500', textAlign: 'center' },
     recentSection: { width: '100%', marginTop: 30 },
     recentTitle: { fontSize: 20, fontWeight: 'bold', color: '#004D40', marginBottom: 15 },
     recentImage: { width: 100, height: 100, borderRadius: 15, marginRight: 15 },

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
 	View,
 	Text,
@@ -15,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { IP_ADDRESS } from '@env';
 import { useSession } from '../SessionContext';
 import AppBackground from '../component/AppBackground';
+import { Ionicons } from '@expo/vector-icons';
 
 type RootStackParamList = {
 	Home: undefined;
@@ -30,8 +31,28 @@ const RegisterScreen = () => {
 	const [name, setName] = useState('');
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
+	const [checkBoxChecked, setCheckBoxChecked] = useState(false);
+	const [emailError, setEmailError] = useState(false);
 
-    const handleRegister = async (name:String, email: string, password: string) => {
+	const validateEmail = (emailValue: string): boolean => {
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		return emailRegex.test(emailValue);
+	};
+
+	const handleEmailChange = (emailValue: string) => {
+		setEmail(emailValue);
+		if (emailValue.length > 0) {
+			setEmailError(!validateEmail(emailValue));
+		} else {
+			setEmailError(false);
+		}
+	};
+
+	const isFormInvalid = useMemo(() => {
+		return !name || !email || !password || emailError || !checkBoxChecked;
+	}, [name, email, password, emailError, checkBoxChecked]);
+
+    const handleRegister = async (username: string, email: string, password: string) => {
         try {
             const response = await fetch(`http://${IP_ADDRESS}:8000/register`, {
                 method: 'POST',
@@ -39,7 +60,7 @@ const RegisterScreen = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ 
-                name: name,
+                username: username,
                 email: email,
                 password: password
                 }),
@@ -82,7 +103,7 @@ const RegisterScreen = () => {
 				<ScrollView contentContainerStyle={[styles.overlay, styles.scrollContent]}>
 					<View style={styles.logoContainer}>
 						<View style={styles.logo}>
-							<Text style={styles.logoText}>🌱</Text>
+							<Ionicons name="person-add-outline" size={36} color="#fff" />
 						</View>
 						<Text style={styles.title}>Crear Cuenta</Text>
 						<Text style={styles.subtitle}>Empieza a gestionar tu cultivo en minutos</Text>
@@ -92,45 +113,74 @@ const RegisterScreen = () => {
 						<View style={styles.inputGroup}>
 							<Text style={styles.label}>Nombre completo</Text>
 							<View style={styles.inputWrapper}>
-						<TextInput
-							style={styles.input}
-							placeholder="Tu nombre"
-							placeholderTextColor="#999"
-							value={name}
-							onChangeText={setName}
-						/>
+								<TextInput
+									style={styles.input}
+									placeholder="Tu nombre"
+									placeholderTextColor="#999"
+									value={name}
+									onChangeText={setName}
+								/>
 							</View>
 						</View>
 
 						<View style={styles.inputGroup}>
 							<Text style={styles.label}>Correo electrónico</Text>
 							<View style={styles.inputWrapper}>
-						<TextInput
-							style={styles.input}
-							placeholder="ejemplo@habichuela.com"
-							placeholderTextColor="#999"
-							keyboardType="email-address"
-							value={email}
-							onChangeText={setEmail}
-						/>
+								<TextInput
+									style={[styles.input, emailError && styles.inputError]}
+									placeholder="ejemplo@habichuela.com"
+									placeholderTextColor="#999"
+									keyboardType="email-address"
+									value={email}
+									onChangeText={handleEmailChange}
+									inputMode="email"
+								/>
 							</View>
+							{emailError && (
+								<Text style={styles.errorMessage}>Email inválido. Usa un formato como: usuario@ejemplo.com</Text>
+							)}
 						</View>
 
 						<View style={styles.inputGroup}>
 							<Text style={styles.label}>Contraseña</Text>
 							<View style={styles.inputWrapper}>
-						<TextInput
-							style={styles.input}
-							placeholder="••••••••"
-							placeholderTextColor="#999"
-							secureTextEntry
-							value={password}
-							onChangeText={setPassword}
-						/>
+								<TextInput
+									style={styles.input}
+									placeholder="••••••••"
+									placeholderTextColor="#999"
+									secureTextEntry
+									value={password}
+									onChangeText={setPassword}
+								/>
 							</View>
 						</View>
 
-						<TouchableOpacity style={styles.registerButton} onPress={() => handleRegister(name, email, password)} activeOpacity={0.85}>
+						<View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
+							<TouchableOpacity
+								style={{
+									width: 24,
+									height: 24,
+									borderWidth: 1,
+									borderColor: '#ccc',
+									borderRadius: 4,
+									backgroundColor: checkBoxChecked ? '#1B9A6E' : 'transparent',
+									justifyContent: 'center',
+									alignItems: 'center',
+									marginRight: 12,
+								}}
+								onPress={() => setCheckBoxChecked(!checkBoxChecked)}
+							>
+								{checkBoxChecked && <View style={{ width: 12, height: 12, backgroundColor: '#fff', borderRadius: 2 }} />}
+							</TouchableOpacity>
+							<Text style={{ fontSize: 13, color: '#333', marginRight: 20 }}>Acepto que se traten mis datos con fines de mejora del modelo</Text>
+						</View>
+						
+						<TouchableOpacity 
+						style={isFormInvalid ? styles.registerButtonDisabled : styles.registerButton} 
+						onPress={() => handleRegister(name, email, password)} 
+						activeOpacity={0.85}
+						disabled={isFormInvalid}
+						>
 							<Text style={styles.registerButtonText}>Crear cuenta →</Text>
 						</TouchableOpacity>
 
@@ -188,7 +238,7 @@ const styles = StyleSheet.create({
 	},
 	subtitle: {
 		fontSize: 12,
-		color: '#888',
+		color: '#000000',
 	},
 	formContainer: {
 		gap: 18,
@@ -199,7 +249,7 @@ const styles = StyleSheet.create({
 	label: {
 		fontSize: 12,
 		fontWeight: '600',
-		color: '#333',
+		color: '#000000',
 	},
 	inputWrapper: {
 		backgroundColor: '#fff',
@@ -222,6 +272,13 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 		alignItems: 'center',
 	},
+	registerButtonDisabled: {
+		marginTop: 8,
+		backgroundColor: '#7d827d',
+		paddingVertical: 14,
+		borderRadius: 8,
+		alignItems: 'center',
+	},
 	registerButtonText: {
 		color: '#fff',
 		fontSize: 16,
@@ -235,6 +292,15 @@ const styles = StyleSheet.create({
 		color: '#167A57',
 		fontSize: 13,
 		fontWeight: '600',
+	},
+	inputError: {
+		borderColor: '#E74C3C',
+	},
+	errorMessage: {
+		color: '#E74C3C',
+		fontSize: 12,
+		fontWeight: '500',
+		marginTop: -4,
 	},
 });
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import { useSession } from '../SessionContext';
 import { useNavigation } from '@react-navigation/native';
 import { User } from '../classes/User';
 import AppBackground from '../component/AppBackground';
+import { Ionicons } from '@expo/vector-icons';
 
 type RootStackParamList = {
   Home: undefined;
@@ -32,6 +33,25 @@ export default function LoginScreen() {
   const { setRecents, setIsLoggedIn, setUser } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [emailError, setEmailError] = useState(false);
+
+  const validateEmail = (emailValue: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(emailValue);
+  };
+
+  const handleEmailChange = (emailValue: string) => {
+    setEmail(emailValue);
+    if (emailValue.length > 0) {
+      setEmailError(!validateEmail(emailValue));
+    } else {
+      setEmailError(false);
+    }
+  };
+
+  const isFormInvalid = useMemo(() => {
+    return !email || !password || emailError;
+  }, [email, password, emailError]);
 
     const handleLogin = async (email: string, password: string) => {
             try {
@@ -84,7 +104,7 @@ export default function LoginScreen() {
         <ScrollView contentContainerStyle={[styles.overlay, styles.scrollContent]}>
           <View style={styles.logoContainer}>
             <View style={styles.logo}>
-              <Image source={require('../../assets/icon.png')} style={styles.logoImage} />
+              <Ionicons name="person-outline" size={36} color="#fff" />
             </View>
             <Text style={styles.title}>AGRODOC</Text>
             <Text style={styles.subtitle}>Una aplicación de agricultores para agricultores</Text>
@@ -95,15 +115,16 @@ export default function LoginScreen() {
               <Text style={styles.label}>Correo electrónico</Text>
               <View style={styles.inputWrapper}>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, emailError && styles.inputError]}
                   placeholder="ejemplo@habichuela.com"
                   placeholderTextColor="#999"
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={handleEmailChange}
                   keyboardType="email-address"
                   inputMode="email"
                 />
               </View>
+              {emailError && <Text style={styles.errorMessage}>Email inválido. Usa un formato como: usuario@ejemplo.com</Text>}
             </View>
 
             <View style={styles.inputGroup}>
@@ -126,8 +147,9 @@ export default function LoginScreen() {
             </View>
 
             <TouchableOpacity
-              style={styles.loginButton}
+              style={isFormInvalid ? styles.loginButtonDisabled : styles.loginButton}
               onPress={() => handleLogin(email, password)}
+              disabled={isFormInvalid}
             >
               <Text style={styles.loginButtonText}>Log In →</Text>
             </TouchableOpacity>
@@ -162,7 +184,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
         flex: 1,
-        backgroundColor: 'rgba(255, 255, 255, 0.65)', // Superposición blanca translúcida
+        backgroundColor: 'rgba(255, 255, 255, 0.65)',
   },
   scrollContent: {
     flexGrow: 1,
@@ -201,7 +223,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 12,
-    color: '#999',
+    color: '#000000',
   },
   formContainer: {
     gap: 20,
@@ -252,6 +274,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
+  loginButtonDisabled: {
+    backgroundColor: '#7d827d',
+    borderRadius: 8,
+		paddingVertical: 14,
+		alignItems: 'center',
+    marginTop: 10
+	},
   loginButtonText: {
     color: '#fff',
     fontSize: 16,
@@ -281,5 +310,14 @@ const styles = StyleSheet.create({
   contactLink: {
     color: '#333',
     fontWeight: '400',
+  },
+  inputError: {
+    borderColor: '#E74C3C',
+  },
+  errorMessage: {
+    color: '#E74C3C',
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: -4,
   },
 });

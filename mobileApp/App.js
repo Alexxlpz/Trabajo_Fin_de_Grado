@@ -9,6 +9,7 @@ import RecoringScreen from './src/screens/Recording';
 import Uploading from "./src/screens/Uploading";
 import Login from "./src/screens/Login";
 import Register from "./src/screens/Register";
+import Profile from "./src/screens/Profile";
 import { SessionProvider } from './src/SessionContext';
 import NavBar from './src/component/NavBar';
 
@@ -48,6 +49,11 @@ export default function App() {
               name="Register"
               component={Register}
               options={{ title: 'Crear Cuenta', showProfile: false }}
+          />
+            <Stack.Screen
+              name="Profile"
+              component={Profile}
+              options={{ title: 'Perfil', showProfile: false }}
           />
       </Stack.Navigator>
     </NavigationContainer>

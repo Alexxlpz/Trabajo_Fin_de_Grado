@@ -38,7 +38,7 @@ export default function NavBar({ navigation, back, options }: any) {
                     {showProfile ? (
                         <TouchableOpacity
                             activeOpacity={0.75}
-                            onPress={() => navigation.navigate('Login')}
+                            onPress={() => { isLoggedIn ? navigation.navigate('Profile') : navigation.navigate('Login')}}
                             style={styles.iconButton}
                         >
                             {isLoggedIn ? (
