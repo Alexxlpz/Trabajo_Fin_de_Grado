@@ -32,6 +32,14 @@ const HomeScreen = ({ navigation }: { navigation: HomeScreenNavigationProp }) =>
                             <Text style={styles.secondaryButtonText}>Subir Archivo</Text>
                         </TouchableOpacity>
 
+                        <TouchableOpacity
+                            style={styles.secondaryButton}
+                            onPress={isLoggedIn ? () => navigation.navigate('Gallery') : () => Alert.alert('Acceso Denegado', 'Debes iniciar sesión para acceder a la galería')}
+                        >
+                            <Ionicons name="image-outline" size={22} color="#00875A" style={styles.buttonIcon} />
+                            <Text style={styles.secondaryButtonText}>Galería</Text>
+                        </TouchableOpacity>
+
                     </View>
                 </View>
             </View>

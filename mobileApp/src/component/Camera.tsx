@@ -79,7 +79,7 @@ export default function Camera() {
 
     function addPhotoToRecents(newPhotoBase64: Base64URLString) {
         const newPhoto: Base64URLString = newPhotoBase64;
-        setRecents((prev: [Base64URLString] | any[]) => [newPhoto, ...prev.slice(0, 4)]); // Mantiene solo los 5 más recientes
+        setRecents((prev: [Base64URLString] | any[]) => [newPhoto, ...prev]);
     }
 
     function toggleCameraRecording(){

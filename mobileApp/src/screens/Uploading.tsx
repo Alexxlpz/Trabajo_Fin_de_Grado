@@ -30,12 +30,13 @@ const UploadingScreen = ({ navigation }: any) => {
     const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
 
     useEffect(() => {
-        setRecentPhotos(recents);
+        setRecentPhotos(recents.slice(0, 5));
     }, [recents]);
 
     function addPhotoToRecents(newPhotoBase64: Base64URLString) {
         const newPhoto: Base64URLString = newPhotoBase64;
-        setRecents((prev: [Base64URLString] | any[]) => [newPhoto, ...prev.slice(0, 4)]); // Mantiene solo los 5 más recientes
+        setRecents((prev: [Base64URLString] | any[]) => [newPhoto, ...prev]);
+        setRecentPhotos((prev: [Base64URLString] | any[]) => [newPhoto, ...prev.slice(0, 5)]);
     }
 
     const uploadFile = async (base64Data: string) => {

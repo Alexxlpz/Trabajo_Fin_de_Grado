@@ -42,7 +42,6 @@ def get_recent_paths(user_id: int, db: Session):
     last_images = db.query(Image) \
         .filter(Image.user_id == user_id) \
         .order_by(desc(Image.upload_date)) \
-        .limit(5) \
         .all()
 
     paths = [img.path for img in last_images]
