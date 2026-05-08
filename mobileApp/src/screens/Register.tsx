@@ -14,7 +14,6 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { IP_ADDRESS } from '@env';
 import { useSession } from '../SessionContext';
-import { User } from '../classes/User';
 import AppBackground from '../component/AppBackground';
 
 type RootStackParamList = {

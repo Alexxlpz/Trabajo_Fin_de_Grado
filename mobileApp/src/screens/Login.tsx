@@ -101,6 +101,7 @@ export default function LoginScreen() {
                   value={email}
                   onChangeText={setEmail}
                   keyboardType="email-address"
+                  inputMode="email"
                 />
               </View>
             </View>
@@ -279,6 +280,6 @@ const styles = StyleSheet.create({
   },
   contactLink: {
     color: '#333',
-    fontWeight: '600',
+    fontWeight: '400',
   },
 });
