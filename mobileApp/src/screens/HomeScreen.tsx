@@ -1,24 +1,24 @@
 import React from 'react';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Text, View, StyleSheet, TouchableOpacity, ImageBackground, SafeAreaView } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSession } from '../SessionContext';
+import AppBackground from '../component/AppBackground';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<any>;
 
 const HomeScreen = ({ navigation }: { navigation: HomeScreenNavigationProp }) => {
+    const { isLoggedIn } = useSession();
+
     return (
-        <ImageBackground
-            source={ require('../../assets/home_background.jpg') }
-            style={styles.background}
-            blurRadius={4}
-        >
+        <AppBackground>
             <View style={styles.overlay}>
                 <View style={styles.container}>
                     <View style={styles.buttonsContainer}>
 
                         <TouchableOpacity
                             style={styles.primaryButton}
-                            onPress={() => navigation.navigate('Recording')}
+                            onPress={isLoggedIn ? () => navigation.navigate('Recording') : () => Alert.alert('Acceso Denegado', 'Debes iniciar sesión para acceder a la cámara')}
                         >
                             <Ionicons name="camera-outline" size={22} color="#FFFFFF" style={styles.buttonIcon} />
                             <Text style={styles.primaryButtonText}>Cámara</Text>
@@ -26,7 +26,7 @@ const HomeScreen = ({ navigation }: { navigation: HomeScreenNavigationProp }) =>
 
                         <TouchableOpacity
                             style={styles.secondaryButton}
-                            onPress={() => navigation.navigate('Uploading')}
+                            onPress={isLoggedIn ? () => navigation.navigate('Uploading') : () => Alert.alert('Acceso Denegado', 'Debes iniciar sesión para acceder a la subida de archivos')}
                         >
                             <Ionicons name="cloud-upload-outline" size={22} color="#00875A" style={styles.buttonIcon} />
                             <Text style={styles.secondaryButtonText}>Subir Archivo</Text>
@@ -35,7 +35,7 @@ const HomeScreen = ({ navigation }: { navigation: HomeScreenNavigationProp }) =>
                     </View>
                 </View>
             </View>
-        </ImageBackground>
+        </AppBackground>
     );
 }
 

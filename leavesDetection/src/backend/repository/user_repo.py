@@ -17,7 +17,7 @@ def authenticate_and_get_recent_paths(db: Session, email: EmailStr, password: st
 
     recents = get_recent_paths(user.id, db)
 
-    return True, recents, user.id
+    return True, recents, user
 
 def register_authenticate_and_get_recent_paths(db: Session, email: EmailStr, password: str):
     user = db.query(User).filter(User.email == email).first()
@@ -32,7 +32,7 @@ def register_authenticate_and_get_recent_paths(db: Session, email: EmailStr, pas
 
         recents = get_recent_paths(user.id, db)
 
-        return True, recents, user.id
+        return True, recents, user
     else:
         return False, [], -1
 

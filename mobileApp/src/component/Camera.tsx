@@ -10,7 +10,9 @@ import {
     Alert,
     Image,
     Platform,
-    StatusBar
+    StatusBar,
+    ActivityIndicator,
+    Animated,
 } from 'react-native';
 import { Fontisto } from '@expo/vector-icons';
 import Constants from "expo-constants";
@@ -23,7 +25,7 @@ interface DetectionResult {
 }
 
 export default function Camera() {
-    const { recents, setRecents } = useSession();
+    const { setRecents, user } = useSession();
     const [recording, setRecording] = useState<boolean>(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [resultData, setResultData] = useState<DetectionResult | null>(null); // guardamos el return que nos devuelve el backend, que contiene el numero de objetos detectados y la imagen en b64
@@ -39,6 +41,26 @@ export default function Camera() {
 
     useEffect(() => { isLoadingRef.current = isLoading; }, [isLoading]);
     useEffect(() => { modalVisibleRef.current = modalVisible; }, [modalVisible]);
+
+    const pulseAnim = useRef(new Animated.Value(1));
+
+    useEffect(() => {
+        let anim: any = null;
+        if (cameraMode === 'FOTO' && isLoading) {
+            anim = Animated.loop(
+                Animated.sequence([
+                    Animated.timing(pulseAnim.current, { toValue: 1.18, duration: 700, useNativeDriver: true }),
+                    Animated.timing(pulseAnim.current, { toValue: 1, duration: 700, useNativeDriver: true }),
+                ])
+            );
+            anim.start();
+        } else {
+            pulseAnim.current.setValue(1);
+            anim?.stop();
+        }
+
+        return () => { anim?.stop(); };
+    }, [isLoading, cameraMode]);
 
     if (!permission) {
         // Camera permissions are still loading.
@@ -121,7 +143,7 @@ export default function Camera() {
                   headers: {
                       'Content-Type': 'application/json',
                   },
-                  body: JSON.stringify({ imageb64: base64Data }),
+                  body: JSON.stringify({ imageb64: base64Data, user_id: user?.id }),
               });
               
               if (!response.ok) {
@@ -220,6 +242,17 @@ export default function Camera() {
                                  style={styles.closeButton}>
                                  <Text style={styles.closeButtonText}>Cerrar</Text>
                              </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
+                <Modal visible={cameraMode === 'FOTO' && isLoading} transparent={true} animationType="fade">
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <Animated.View style={[styles.innerCircle, { transform: [{ scale: pulseAnim.current }] }] }>
+                                <ActivityIndicator size="large" color="#00E676" />
+                            </Animated.View>
+                            <Text style={styles.loadingTitle}>Analizando imagen...</Text>
+                            <Text style={styles.loadingSubtext}>Esto puede tardar unos segundos. Gracias por tu paciencia.</Text>
                         </View>
                     </View>
                 </Modal>
@@ -352,5 +385,30 @@ const styles = StyleSheet.create({
         height: 66,
         borderRadius: 33,
         backgroundColor: 'white',
+    },
+    innerCircle: {
+        width: 88,
+        height: 88,
+        borderRadius: 44,
+        backgroundColor: 'white',
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#00E676',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.12,
+        shadowRadius: 12,
+        elevation: 6,
+    },
+    loadingTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        marginTop: 6,
+        color: '#222',
+    },
+    loadingSubtext: {
+        fontSize: 13,
+        color: '#666',
+        marginTop: 6,
+        textAlign: 'center',
     },
 });
