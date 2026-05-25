@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSession } from '../SessionContext';
 
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#00875A',
         width: '100%',
         alignSelf: 'stretch',
-        paddingTop: Platform.OS === 'ios' ? 62 : 18,
+        paddingTop: Platform.OS === 'ios' ? 62 : (StatusBar.currentHeight ? StatusBar.currentHeight + 12 : 18),
         paddingBottom: 12,
         paddingHorizontal: 18,
         borderBottomLeftRadius: 0,

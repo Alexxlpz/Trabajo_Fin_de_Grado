@@ -60,12 +60,13 @@ def predictionSlicing(imageName: str, session: int, debug_mode: bool = False):
 
     encodeImage, annotated_path, healthy, sick = cropAndClasify(filtered_pred_list, IMAGE_SOURCE, CACHE_PATH, debug_mode)
 
-    save_database_entry(
-        IMAGE_SOURCE = annotated_path,
-        session=session,
-        healthy = healthy,
-        sick = sick
-    )
+    if session != -1:
+        save_database_entry(
+            IMAGE_SOURCE = annotated_path,
+            session=session,
+            healthy = healthy,
+            sick = sick
+        )
 
     #os.makedirs(OUTPUT_IMAGE_PATH, exist_ok=True)
     #result.export_visuals(export_dir=OUTPUT_IMAGE_PATH, file_name=teseledImagenName)
@@ -171,25 +172,19 @@ def cropAndClasify(predictions, image, cache_folder, debugg_mode: bool = False):
                                                                                 #al clasificador y que se encargue el
                                                                                 #otro archivo
         if classifyObject(crop):
-            if debugg_mode:
-                    # guardamos el crop para debuggear el clasificador
-                    filename = f"crop_{i}.jpg"
-                    out_path = os.path.join(DEBUG_PATH, filename)
-                    cv2.imwrite(out_path, crop, [cv2.IMWRITE_JPEG_QUALITY, int(100)])
-
             #pintamos cuadro verde
             cv2.rectangle(img, (coords[0], coords[1]), (coords[2], coords[3]), (0, 255, 0), 2)
             healthy += 1
         else:
-            if debugg_mode:
-                    # guardamos el crop para debuggear el clasificador
-                    filename = f"crop_{i}.jpg"
-                    out_path = os.path.join(DEBUG_PATH, filename)
-                    cv2.imwrite(out_path, crop, [cv2.IMWRITE_JPEG_QUALITY, int(100)])
-
             #pintamos cuadro rojo
             cv2.rectangle(img, (coords[0], coords[1]), (coords[2], coords[3]), (0, 0, 255), 2)
             sick += 1
+
+        if debugg_mode:
+                # guardamos el crop para debuggear el clasificador
+                filename = f"crop_{i}.jpg"
+                out_path = os.path.join(DEBUG_PATH, filename)
+                cv2.imwrite(out_path, crop, [cv2.IMWRITE_JPEG_QUALITY, int(100)])
 
         saved += 1
 
@@ -197,9 +192,17 @@ def cropAndClasify(predictions, image, cache_folder, debugg_mode: bool = False):
 
     # Guardar la imagen anotada y devolverla en Base64
     timestamp = time.strftime("%Y%m%d-%H%M%S")
-    annotated_filename = f"annotated_{timestamp}.png"
+    annotated_filename = f"annotated_{timestamp}.jpg"  # ← consistente con JPEG
     annotated_path = os.path.join(output_folder, annotated_filename)
     ok = cv2.imwrite(annotated_path, img, [cv2.IMWRITE_JPEG_QUALITY, int(90)])
+
+    if not ok:
+        raise RuntimeError(f"No se pudo guardar la imagen anotada en {annotated_path}")
+
+    if debugg_mode:
+        debug_annotated_path = os.path.join(DEBUG_PATH, annotated_filename)
+        cv2.imwrite(debug_annotated_path, img, [cv2.IMWRITE_JPEG_QUALITY, int(90)])
+
 
     if not ok:
         raise RuntimeError(f"No se pudo guardar la imagen anotada en {annotated_path}")

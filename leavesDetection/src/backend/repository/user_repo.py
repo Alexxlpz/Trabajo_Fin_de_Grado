@@ -30,9 +30,7 @@ def register_authenticate_and_get_recent_paths(db: Session, email: EmailStr, pas
         user = new_user
         print(user.id, user.username, user.email)
 
-        recents = get_recent_paths(user.id, db)
-
-        return True, recents, user
+        return True, [], user
     else:
         return False, [], -1
 

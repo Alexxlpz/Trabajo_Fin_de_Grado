@@ -13,7 +13,8 @@ import os
 from src.backend.repository.user_repo import authenticate_and_get_recent_paths, register_authenticate_and_get_recent_paths
 from src.utilities.predictionSlicing import predictionSlicing
 
-
+class RegisterSchema(LoginSchema):
+    username: str
 app = FastAPI()
 
 @app.on_event("startup")
@@ -35,8 +36,8 @@ async def login(data: LoginSchema, db: Session = Depends(get_db)):
     return {"message": message, "recent_list": recent_list, "user": user} #  cambiar el nombre, messahe no es muy representativo
 
 @app.post("/register")
-async def register(data: LoginSchema, username:str, db: Session = Depends(get_db)):
-    message, recent_list, user = register_authenticate_and_get_recent_paths(db, data.email, data.password, username)
+async def register(data: RegisterSchema, db: Session = Depends(get_db)):
+    message, recent_list, user = register_authenticate_and_get_recent_paths(db, data.email, data.password, data.username)
     return {"message": message, "recent_list": recent_list, "user": user}
 
 def recibir(imageb64: str):
