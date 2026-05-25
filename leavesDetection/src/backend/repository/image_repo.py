@@ -13,12 +13,15 @@ def create_image_with_direction(path: str, latitude: float, longitude: float,
         session = SessionLocal()
         own_session = True
 
+    upload_date_formated = None
+    if upload_date is not None:
+        upload_date_formated = datetime.strptime(str(upload_date), '%d/%m/%Y %H:%M:%S')
     try:
         img = Image(
             path=path,
             num_sick=num_sick,
             num_healthy=num_healthy,
-            upload_date=upload_date,
+            upload_date=upload_date_formated,
             user_id=user_id
         )
         dir = Direction(latitude=latitude, longitude=longitude)

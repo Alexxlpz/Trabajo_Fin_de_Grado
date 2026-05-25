@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
     View, Text, TouchableOpacity, Alert, StyleSheet,
-    ActivityIndicator, Image, Modal, ImageBackground,
+    ActivityIndicator, Image, Modal,
     FlatList, ScrollView, Dimensions
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { IP_ADDRESS } from "@env";
 import { useSession } from '../SessionContext';
+import AppBackground from '../component/AppBackground';
 
 const UPLOAD_URL = `http://${IP_ADDRESS}:8000/analyze`;
 
@@ -18,7 +19,7 @@ interface DetectionResult {
 }
 
 const UploadingScreen = ({ navigation }: any) => {
-    const { recents, setRecents } = useSession();
+    const { recents, setRecents, user } = useSession();
     const [loading, setLoading] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [resultData, setResultData] = useState<DetectionResult | null>(null);
@@ -29,12 +30,13 @@ const UploadingScreen = ({ navigation }: any) => {
     const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
 
     useEffect(() => {
-        setRecentPhotos(recents);
+        setRecentPhotos(recents.slice(0, 5));
     }, [recents]);
 
     function addPhotoToRecents(newPhotoBase64: Base64URLString) {
         const newPhoto: Base64URLString = newPhotoBase64;
-        setRecents((prev: [Base64URLString] | any[]) => [newPhoto, ...prev.slice(0, 4)]); // Mantiene solo los 5 más recientes
+        setRecents((prev: [Base64URLString] | any[]) => [newPhoto, ...prev]);
+        setRecentPhotos((prev: [Base64URLString] | any[]) => [newPhoto, ...prev.slice(0, 5)]);
     }
 
     const uploadFile = async (base64Data: string) => {
@@ -77,7 +79,7 @@ const UploadingScreen = ({ navigation }: any) => {
             const response = await fetch(UPLOAD_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ imageb64: base64Data }),
+                body: JSON.stringify({ imageb64: base64Data, user_id: user?.id }),
             });
 
             if (!response.ok) throw new Error(`Status: ${response.status}`);
@@ -102,11 +104,7 @@ const UploadingScreen = ({ navigation }: any) => {
     }
 
     return (
-        <ImageBackground
-            source={require('../../assets/home_background.jpg')}
-            style={styles.backgroundImage}
-            blurRadius={4}
-        >
+        <AppBackground>
             <View style={styles.overlay}>
                 <ScrollView contentContainerStyle={styles.content}>
                     <Text style={styles.mainTitle}>Subir Multimedia</Text>
@@ -141,7 +139,15 @@ const UploadingScreen = ({ navigation }: any) => {
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>Análisis Completado</Text>
-                        {loading ? <ActivityIndicator size="large" color="#00875A" /> : (
+                        {loading ? (
+                            <View style={styles.loadingWrapper}>
+                                <View style={styles.innerCircle}>
+                                    <ActivityIndicator size="large" color="#00E676" />
+                                </View>
+                                <Text style={styles.loadingTitle}>Analizando imagen...</Text>
+                                <Text style={styles.loadingSubtext}>Esto puede tardar unos segundos. Gracias por tu paciencia.</Text>
+                            </View>
+                        ) : (
                             resultData && (
                                 <>
                                     <Image
@@ -205,7 +211,18 @@ const UploadingScreen = ({ navigation }: any) => {
                     </View>
                 </View>
             </Modal>
-        </ImageBackground>
+            <Modal visible={loading} transparent={true} animationType="fade">
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.innerCircle}>
+                            <ActivityIndicator size="large" color="#00E676" />
+                        </View>
+                        <Text style={styles.loadingTitle}>Analizando imagen...</Text>
+                        <Text style={styles.loadingSubtext}>Esto puede tardar unos segundos. Gracias por tu paciencia.</Text>
+                    </View>
+                </View>
+            </Modal>
+        </AppBackground>
     );
 };
 
@@ -250,7 +267,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 10,
     },
-    dashedText: { color: '#004D40', fontSize: 16, fontWeight: '500' },
+    dashedText: { color: '#004D40', fontSize: 16, fontWeight: '500', textAlign: 'center' },
     recentSection: { width: '100%', marginTop: 30 },
     recentTitle: { fontSize: 20, fontWeight: 'bold', color: '#004D40', marginBottom: 15 },
     recentImage: { width: 100, height: 100, borderRadius: 15, marginRight: 15 },
@@ -273,6 +290,33 @@ const styles = StyleSheet.create({
     modalText: { fontSize: 18, marginBottom: 20 },
     closeButton: { backgroundColor: '#00875A', paddingHorizontal: 40, paddingVertical: 12, borderRadius: 15 },
     closeButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+    innerCircle: {
+        width: 88,
+        height: 88,
+        borderRadius: 44,
+        backgroundColor: 'white',
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#00E676',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.12,
+        shadowRadius: 12,
+        elevation: 6,
+        marginBottom: 12,
+    },
+    loadingTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        marginTop: 6,
+        color: '#222',
+    },
+    loadingSubtext: {
+        fontSize: 13,
+        color: '#666',
+        marginTop: 6,
+        textAlign: 'center',
+    },
+    loadingWrapper: { alignItems: 'center' },
     galleryOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.95)', justifyContent: 'center', alignItems: 'center' },
     galleryItem: { justifyContent: 'center', alignItems: 'center' },
     fullImage: { borderRadius: 12 },

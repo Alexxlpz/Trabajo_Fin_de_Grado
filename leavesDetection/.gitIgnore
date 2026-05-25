@@ -1,2 +1,5 @@
 /data/dataset/
 /data/models/
+/data/cache/
+/notebooks/clasificator_plots/
+/notebooks/pre-trainingsetSam3/

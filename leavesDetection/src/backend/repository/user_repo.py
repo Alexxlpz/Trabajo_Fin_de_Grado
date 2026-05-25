@@ -17,22 +17,20 @@ def authenticate_and_get_recent_paths(db: Session, email: EmailStr, password: st
 
     recents = get_recent_paths(user.id, db)
 
-    return True, recents, user.id
+    return True, recents, user
 
-def register_authenticate_and_get_recent_paths(db: Session, email: EmailStr, password: str):
+def register_authenticate_and_get_recent_paths(db: Session, email: EmailStr, password: str, username: str):
     user = db.query(User).filter(User.email == email).first()
 
     if not user:
-        new_user = User(email=str(email), password=password, username=str(email).split("@")[0])
+        new_user = User(email=str(email), password=password, username=username)
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
         user = new_user
         print(user.id, user.username, user.email)
 
-        recents = get_recent_paths(user.id, db)
-
-        return True, recents, user.id
+        return True, [], user
     else:
         return False, [], -1
 
@@ -42,7 +40,6 @@ def get_recent_paths(user_id: int, db: Session):
     last_images = db.query(Image) \
         .filter(Image.user_id == user_id) \
         .order_by(desc(Image.upload_date)) \
-        .limit(5) \
         .all()
 
     paths = [img.path for img in last_images]

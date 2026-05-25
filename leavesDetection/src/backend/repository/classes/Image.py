@@ -9,7 +9,7 @@ class Image(Base):
     num_sick = Column(Integer)
     num_healthy = Column(Integer)
     path = Column(String)
-    upload_date = Column(DateTime) # todo no estaba puesto pero la fecha de subida puede ser util
+    upload_date = Column(DateTime)
 
     # Claves foráneas
     user_id = Column(Integer, ForeignKey("users.id"))
