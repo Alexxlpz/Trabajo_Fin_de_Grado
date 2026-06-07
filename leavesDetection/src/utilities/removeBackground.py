@@ -30,6 +30,6 @@ for filename in os.listdir(pathInput):
             else:
                 final_rgb.save(output_path)
 
-            print(f"Guardado: {output_path}")
+            print(f"guardado: {output_path}")
         except Exception as e:
-            print(f"Error procesando {input_path}: {e}")
+            print(f"error procesando {input_path}: {e}")

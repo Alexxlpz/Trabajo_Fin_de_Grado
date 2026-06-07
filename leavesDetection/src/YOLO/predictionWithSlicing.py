@@ -3,23 +3,17 @@ from sahi.predict import get_sliced_prediction
 import os
 from src.utilities.makePlot import make_plot
 
-# ruta del YOLO entrenado
-YOLO_MODEL_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/models/CNN/rtdetr_run1/weights/best.pt'
+YOLO_MODEL_PATH = '../../data/models/CNN/rtdetr_run1/weights/best.pt'
+IMAGE_SOURCE = '../../data/dataset/dummy_images/imagenReal2.jpeg'
+OUTPUT_IMAGE_PATH = '../../data/inference_results'
 
-# ruta de la imagen a predicie
-IMAGE_SOURCE = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/dataset/dummy_images/imagenReal2.jpeg'
-
-# donde guardamos la imagen con la prediccion hecha
-OUTPUT_IMAGE_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/inference_results'
-
-#TODO: PROBAR EN EL ORDENADOR GRANDE YA QUE EN EL PORTATIL NO TENGO AL YOLO ENTRENADO
 MAX_HEIGHT = 640
 MAX_WIDTH = 640
 
 detection_model = AutoDetectionModel.from_pretrained(
-    model_type='ultralytics',  # Tipo de modelo: YOLO
+    model_type='ultralytics',  # tipo de modelo: YOLO
     model_path=YOLO_MODEL_PATH,
-    confidence_threshold=0.3,  # Umbral de confianza al principio
+    confidence_threshold=0.3,  # umbral de confianza al principio
     device="cuda:0"  # para usar la grafica
 )
 print("Modelo YOLO cargado exitosamente.")

@@ -43,6 +43,7 @@ const UploadingScreen = ({ navigation }: any) => {
         try {
             setLoading(true);
             await fetchPicture(base64Data);
+            //await fetchPictureDebugg(base64Data);
             console.log('Archivo enviado y procesado');
         } catch (error) {
             Alert.alert('Error', 'No se pudo subir el archivo.');
@@ -101,6 +102,59 @@ const UploadingScreen = ({ navigation }: any) => {
             console.error(error);
             Alert.alert('Error de conexión', 'No se pudo conectar con el servidor.');
         }
+    }
+
+    async function fetchPictureDebugg(base64Data: string){
+            try {
+                // lo enviamos en una peticion post ya que es exageradamente larga la cadena de b64
+                const client_send_time = Date.now();
+                const response = await fetch(`http://${IP_ADDRESS}:8000/analyzeDebugg`, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ imageb64: base64Data, user_id: user?.id, sended_time: client_send_time }),
+                });
+                const clientReceiveTime = Date.now();
+                
+                if (!response.ok) {
+                    Alert.alert('Error', `La respuesta del servidor no es correcta (Status: ${response.status})`);
+                    return;
+                }
+
+                const jsonRecived = await response.json();
+                console.log('Respuesta del servidor recibida');
+
+                // Guardamos los datos y mostramos el modal
+                if (jsonRecived && typeof jsonRecived.leaf_count === 'number' && typeof jsonRecived.image_base64 === 'string') {
+                    const result: DetectionResult = {
+                        leaf_count: jsonRecived.leaf_count,
+                        image_base64: jsonRecived.image_base64,
+                    };
+                    const server_arrival_time = jsonRecived.server_arrival_time;
+                    const server_processing_time = jsonRecived.server_processing_time;
+                    const tiempoTotalRTT = clientReceiveTime - client_send_time;
+                    const tiempoProcesamientoServidor = server_processing_time - server_arrival_time;
+                    const tiempoRedPuro = tiempoTotalRTT - tiempoProcesamientoServidor;
+                    const tiempoIdaSeguro = tiempoRedPuro / 2;
+                    const tiempoVueltaSeguro = tiempoRedPuro / 2;
+
+                    console.log(`Tiempo Total de ida y vuelta (RTT): ${tiempoTotalRTT} ms`);
+                    console.log(`Tiempo de procesamiento interno en FastAPI: ${tiempoProcesamientoServidor} ms`);
+                    console.log(`Tiempo estimado de Red (Ida): ${tiempoIdaSeguro} ms`);
+                    console.log(`Tiempo estimado de Red (Vuelta): ${tiempoVueltaSeguro} ms`);
+
+                    setResultData(result);
+                    setModalVisible(true);
+                    addPhotoToRecents(result.image_base64);
+                } else {
+                    Alert.alert('Error', 'Respuesta inesperada del servidor');
+                    console.error('Respuesta inválida del servidor:', jsonRecived);
+                }
+            } catch (error) {
+              console.error(error);
+              Alert.alert('Error de conexión', 'No se pudo conectar con el servidor.');
+            }
     }
 
     return (

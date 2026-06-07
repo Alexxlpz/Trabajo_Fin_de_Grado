@@ -11,7 +11,7 @@ def make_plot(x, name):
     plt.ylabel('Confidence Score')
     plt.ylim(0, 1)
     plt.grid(True)
-    plt.savefig("C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/plots/"+name)
+    plt.savefig("../../data/plots/"+name)
     plt.close()
 
 if __name__ == '__main__':

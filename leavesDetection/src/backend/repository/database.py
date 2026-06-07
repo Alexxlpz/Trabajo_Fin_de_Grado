@@ -12,7 +12,8 @@ Base = declarative_base()
 
 def init_db():
     import src.backend.repository.classes.User  # noqa: F401
-    import src.backend.repository.classes.Direction  # noqa: F401
+    import src.backend.repository.classes.Crop  # noqa: F401
+    import src.backend.repository.classes.Model  # noqa: F401
     import src.backend.repository.classes.Image  # noqa: F401
 
     Base.metadata.create_all(bind=engine)

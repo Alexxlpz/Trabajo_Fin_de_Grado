@@ -1,20 +1,19 @@
 from ultralytics import YOLO
 import os
 
-# 1. ESPECIFICA LA RUTA A TU MEJOR MODELO
-# Reemplaza 'Ruta/a/tu/proyecto' con la ruta real donde se guardó el modelo.
-# El archivo se llama generalmente 'best.pt'.
-MODELO_ENTRENADO = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/models/CNN/yolov12_Leaves_Detector_run1/weights/best.pt'
+MODELO_ENTRENADO = '../../data/models/CNN/yolov12_Leaves_Detector_run1/weights/best.pt'
 
-CARPETA_RAIZ_RESULTADOS = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/inference_results'
+CARPETA_RAIZ_RESULTADOS = '../../data/inference_results'
 
-# 2. ESPECIFICA LA RUTA DE LA IMAGEN A PROCESAR
 IMAGEN_A_DETECTAR1 = '../../data/dataset/dummy_images/imagenReal2.jpeg'
-IMAGEN_A_DETECTAR2 = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/dataset/dummy_images/image (21).JPG'
-IMAGEN_REAL = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/dataset/dummy_images/imagenReal.JPG'
+IMAGEN_A_DETECTAR2 = '../../data/dataset/dummy_images/image (21).JPG'
+IMAGEN_REAL = '../../data/dataset/dummy_images/imagenReal.JPG'
 
+
+# Este script carga un modelo YOLO entrenado y realiza predicciones simples, sin teselar, sobre una imagen,
+# mostrando los resultados en la consola y guardando la imagen con las detecciones.
 if __name__ == '__main__':
-    # Cargar el modelo YOLO entrenado
+    # cargar el modelo YOLO entrenado
     model = YOLO(MODELO_ENTRENADO)
     print(f"Iniciando predicción en {IMAGEN_REAL}")
 
@@ -28,20 +27,20 @@ if __name__ == '__main__':
         exist_ok=True
     )
 
-    print("✅ Predicción completada. Revisando resultados...")
+    print("Predicción completada. Revisando resultados...")
     result = results[0]
 
     if result.boxes:
-        # Imprime el número de detecciones encontradas
+        # imprime el número de detecciones encontradas
         print(f"\nNúmero total de objetos detectados: {len(result.boxes)}")
 
-        # Iterar sobre cada detección
+        # iterar sobre cada detección
         for i, box in enumerate(result.boxes):
             clase_id = int(box.cls)
             confianza = float(box.conf)
             coordenadas = box.xyxy[0].tolist()  # Coordenadas [x1, y1, x2, y2]
 
-            # Obtener el nombre de la clase
+            # obtener el nombre de la clase
             nombre_clase = model.names[clase_id]
 
             print(f"Detección {i + 1}:")

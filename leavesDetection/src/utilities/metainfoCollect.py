@@ -3,9 +3,9 @@ import time
 from PIL import Image
 
 
-def metainfo_collect(IMAGE_SOURCE):
+def metainfo_collect(image_source):
     try:
-        img = Image.open(IMAGE_SOURCE)
+        img = Image.open(image_source)
         exif_data = img._getexif()
         if exif_data is not None:
             gps_info = exif_data.get(34853)  # GPSInfo tag
