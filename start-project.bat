@@ -4,6 +4,11 @@ echo Configurando entorno del proyecto...
 
 set /p EXPO_USER="Usuario de Expo: "
 set /p EXPO_PASS="Contrasena de Expo: "
+echo 🔎 Abre otra consola, escribe 'ipconfig' y busca tu 'Direccion IPv4' (ej: 192.168.1.X)
+set /p IP_ADDRESS="🌐 Introduce la IP de tu ordenador: "
+
+echo IP_ADDRESS="%IP_ADDRESS%" > mobileApp\.env
+echo Archivo .env listo en mobileApp con la IP: %IP_ADDRESS%
 
 echo.
 echo Revisando base de datos PostgreSQL...
