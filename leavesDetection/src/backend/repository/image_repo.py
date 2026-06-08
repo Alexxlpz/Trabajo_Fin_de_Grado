@@ -32,7 +32,7 @@ def create_image_with_direction(path: str, latitude: float, longitude: float,
         model = session.query(Model).filter(Model.path == model_path).first()
 
         if not model:
-            model = Model(name=model_path.split("/")[-3], path=model_path)
+            model = Model(name=model_path.split("/")[-1], path=model_path)
             session.add(model)
             session.commit()
             session.refresh(model)

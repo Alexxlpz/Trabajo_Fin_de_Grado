@@ -9,16 +9,13 @@ from tensorflow.keras.applications.resnet50 import preprocess_input as preproces
 
 SAVE_MODEL_PATH = '../../data/models/'
 MODEL_PATH = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'models', 'discriminador_hojas_ResNet50v2.h5')
+    os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'models', 'discriminador_hojas_ResNet50.h5')
 )
 
 _MODEL = None  # cache del modelo, para evitar cargarlo múltiples veces si classifyObject se llama varias veces
                 # en la misma ejecución
 
 def get_model():
-    """
-    Carga y cachea el modelo. Lanza FileNotFoundError si no existe el archivo.
-    """
     global _MODEL
     if _MODEL is not None:
         return _MODEL

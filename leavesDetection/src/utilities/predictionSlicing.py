@@ -16,15 +16,19 @@ from src.utilities.classifyObject import classifyObject
 from src.utilities.makePlot import make_plot
 from src.utilities.metainfoCollect import metainfo_collect
 
+# Obtener la ruta absoluta basada en la ubicación de este script
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_PROJECT_ROOT = os.path.abspath(os.path.join(_SCRIPT_DIR, '../../..'))
+
 # ruta del YOLO entrenado
-YOLO_MODEL_PATH = '../../data/models/YOLO_run6.pt'
+YOLO_MODEL_PATH = os.path.join(_PROJECT_ROOT, 'leavesDetection', 'data', 'models', 'YOLO_run6.pt')
 
 # donde guardamos la imagen con la prediccion hecha
-OUTPUT_IMAGE_PATH = '../../data/inference_results'
+OUTPUT_IMAGE_PATH = os.path.join(_PROJECT_ROOT, 'leavesDetection', 'data', 'inference_results')
 
-CACHE_PATH = '../../data/cache'
+CACHE_PATH = os.path.join(_PROJECT_ROOT, 'leavesDetection', 'data', 'cache')
 
-DEBUG_PATH = '../../data/inference_results/debug'
+DEBUG_PATH = os.path.join(_PROJECT_ROOT, 'leavesDetection', 'data', 'inference_results', 'debug')
 
 _MODEL = None # lo guardamos de manera global para no tener que cargarlo cada vez que se llama a la función de
 # prediccion, lo cargamos solo la primera vez y luego se reutiliza. Asi es bastante mas rápida la predicción
