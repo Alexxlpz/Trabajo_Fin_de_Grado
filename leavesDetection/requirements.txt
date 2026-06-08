@@ -15,3 +15,5 @@ rembg
 Pillow
 tensorflow
 numpy
+pydantic[email]
+psycopg2
