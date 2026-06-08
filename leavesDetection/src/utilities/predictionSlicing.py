@@ -17,7 +17,7 @@ from src.utilities.makePlot import make_plot
 from src.utilities.metainfoCollect import metainfo_collect
 
 # ruta del YOLO entrenado
-YOLO_MODEL_PATH = '../../data/models/CNN/yolov12_Leaves_Detector_run_6(with-sam3)/weights/best.pt'
+YOLO_MODEL_PATH = '../../data/models/YOLO_run6.pt'
 
 # donde guardamos la imagen con la prediccion hecha
 OUTPUT_IMAGE_PATH = '../../data/inference_results'
