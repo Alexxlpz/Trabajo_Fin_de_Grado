@@ -3,7 +3,7 @@ import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-// Importamos las pantallas entre las que navegaremos
+// importamos las pantallas entre las que navegaremos
 import HomeScreen from './src/screens/HomeScreen';
 import RecoringScreen from './src/screens/Recording';
 import Uploading from "./src/screens/Uploading";

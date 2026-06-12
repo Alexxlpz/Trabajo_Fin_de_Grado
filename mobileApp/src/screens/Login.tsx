@@ -72,7 +72,7 @@ export default function LoginScreen() {
               }
 
               const jsonRecived = await response.json();
-               console.log('Respuesta del servidor recibida');
+               console.log('respuesta del servidor recibida');
 
                 if (jsonRecived && jsonRecived.message && Array.isArray(jsonRecived.recent_list)) {
                     // guardo los path de manera local para tenerlos disponibles en la pantalla de upload y redirijo a la pantalla anterior
