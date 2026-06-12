@@ -23,12 +23,12 @@ def metainfo_collect(image_source):
                     try:
                         formatted_timestamp = timestamp.replace(':', '-', 2)
                     except Exception as e:
-                        print(f"Error formateando fecha: {e}")
+                        print(f"error formateando fecha: {e}")
                         formatted_timestamp = time.strftime("%d/%m/%Y %H:%M:%S")
 
                 return flat, flon, formatted_timestamp
     except Exception as e:
-        print(f"Error al extraer metainformación: {e}")
+        print(f"error al extraer metainformación: {e}")
     return None, None, time.strftime("%d/%m/%Y %H:%M:%S")
 
 def degrees_to_decimal(dms_tuple):

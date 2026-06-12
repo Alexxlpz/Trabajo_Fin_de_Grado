@@ -61,7 +61,7 @@ def cargar_y_preparar_imagen_cv2(img_array, target_size=(224, 224), from_bgr=Tru
     if img_array.ndim == 2: # 2 es que esta en escala de grises, asi que lo converrtimos a 3 canales (BGR)
         img_array = cv2.cvtColor(img_array, cv2.COLOR_GRAY2BGR)
 
-    if img_array.ndim == 3 and img_array.shape[2] == 4: # si tiene canal alpha, convertir RGBA -> RGB (descartar alpha)
+    if img_array.ndim == 3 and img_array.shape[2] == 4: # si tiene canal alpha, convertir BGRA -> BGR (descartar alpha)
         img_array = cv2.cvtColor(img_array, cv2.COLOR_BGRA2BGR)
 
 
@@ -74,7 +74,8 @@ def cargar_y_preparar_imagen_cv2(img_array, target_size=(224, 224), from_bgr=Tru
     # convertir a float32 y expandir batch
     arr = np.expand_dims(resized.astype(np.float32), axis=0)
 
-    # aplicar preprocess específico de ResNet50 (modo 'caffe' espera BGR)
+    # aplicar preprocess específico de ResNet50 (resnet esta escrito sobre el framework de "caffe" que espera bgr, por
+    # lo que hay que intentar que se le pasen imagenes en ese formato nada mas para que haga la prediccion correctamente)
     preprocessed = preprocess_resnet(arr)
 
     return preprocessed

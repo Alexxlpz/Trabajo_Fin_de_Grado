@@ -50,7 +50,7 @@ def get_recent_paths(user_id: int, db: Session):
         try:
             recents.append(pick_and_convert_base64_image(str(path)))
         except Exception as e:
-            print(f"Error al convertir la imagen {str(path)} a base64: {e}")
+            print(f"error al convertir la imagen {str(path)} a base64: {e}")
 
     return recents
 

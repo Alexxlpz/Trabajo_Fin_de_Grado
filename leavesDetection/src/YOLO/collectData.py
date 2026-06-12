@@ -26,4 +26,4 @@ if __name__ == '__main__':
         # patience=50 Detiene el entrenamiento si no hay mejora después de 50 épocas
     )
 
-    print("Entrenamiento completado :))).")
+    print("entrenamiento completado :))).")

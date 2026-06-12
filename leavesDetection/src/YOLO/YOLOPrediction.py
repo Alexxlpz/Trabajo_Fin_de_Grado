@@ -15,7 +15,7 @@ IMAGEN_REAL = '../../data/dataset/dummy_images/imagenReal.JPG'
 if __name__ == '__main__':
     # cargar el modelo YOLO entrenado
     model = YOLO(MODELO_ENTRENADO)
-    print(f"Iniciando predicción en {IMAGEN_REAL}")
+    print(f"iniciando predicción en {IMAGEN_REAL}")
 
     results = model.predict(
         source=IMAGEN_A_DETECTAR1,
@@ -27,18 +27,18 @@ if __name__ == '__main__':
         exist_ok=True
     )
 
-    print("Predicción completada. Revisando resultados...")
+    print("predicción completada. Revisando resultados...")
     result = results[0]
 
     if result.boxes:
-        # imprime el número de detecciones encontradas
-        print(f"\nNúmero total de objetos detectados: {len(result.boxes)}")
+        # imprime el numero de detecciones encontradas
+        print(f"\nnumero total de objetos detectados: {len(result.boxes)}")
 
         # iterar sobre cada detección
         for i, box in enumerate(result.boxes):
             clase_id = int(box.cls)
             confianza = float(box.conf)
-            coordenadas = box.xyxy[0].tolist()  # Coordenadas [x1, y1, x2, y2]
+            coordenadas = box.xyxy[0].tolist()  # [x1, y1, x2, y2]
 
             # obtener el nombre de la clase
             nombre_clase = model.names[clase_id]
@@ -49,6 +49,6 @@ if __name__ == '__main__':
             print(f"  Coordenadas (xyxy): {coordenadas}")
 
     else:
-        print("\nNo se detectaron objetos en la imagen con el umbral de confianza dado.")
+        print("\nno se detectaron objetos en la imagen con el umbral de confianza dado.")
 
-    print(f"\nImagen con detecciones guardada en: {result.save_dir}")
+    print(f"\nimagen con detecciones guardada en: {result.save_dir}")

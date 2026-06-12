@@ -8,7 +8,7 @@ def dibujar_recuadros_yolo_recursivo(ruta_imagenes, ruta_etiquetas, ruta_destino
     extensiones = (".jpg", ".jpeg", ".png", ".bmp")
     contador_imagenes = 0
 
-    print("Iniciando búsqueda recursiva de imágenes...")
+    print("iniciando búsqueda recursiva de imágenes...")
 
     for dirpath, _, filenames in os.walk(ruta_imagenes):
         ruta_relativa = str(os.path.relpath(dirpath, ruta_imagenes))
@@ -35,13 +35,13 @@ def dibujar_recuadros_yolo_recursivo(ruta_imagenes, ruta_etiquetas, ruta_destino
                     else os.path.join(ruta_relativa, nombre_img)
                 )
                 print(
-                    f"Advertencia: No se encontró etiqueta para {ruta_alerta}"
+                    f"advertencia: No se encontró etiqueta para {ruta_alerta}"
                 )
                 continue
 
             img = cv2.imread(str(camino_img))
             if img is None:
-                print(f"Error al leer la imagen {nombre_img}")
+                print(f"error al leer la imagen {nombre_img}")
                 continue
 
             alto, ancho, _ = img.shape
@@ -83,8 +83,8 @@ def dibujar_recuadros_yolo_recursivo(ruta_imagenes, ruta_etiquetas, ruta_destino
             cv2.imwrite(str(camino_salida), img)
             contador_imagenes += 1
 
-    print(f"\n¡Proceso completado con éxito!")
-    print(f"Se procesaron {contador_imagenes} imágenes y se guardaron en: {ruta_destino}")
+    print(f"\nproceso completado con éxito!")
+    print(f"se procesaron {contador_imagenes} imágenes y se guardaron en: {ruta_destino}")
 
 if __name__ == "__main__":
     CARPETA_IMAGENES = '../../data/dataset/images/'

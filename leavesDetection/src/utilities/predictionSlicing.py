@@ -16,18 +16,12 @@ from src.utilities.classifyObject import classifyObject
 from src.utilities.makePlot import make_plot
 from src.utilities.metainfoCollect import metainfo_collect
 
-# Obtener la ruta absoluta basada en la ubicación de este script
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 _PROJECT_ROOT = os.path.abspath(os.path.join(_SCRIPT_DIR, '../../..'))
 
-# ruta del YOLO entrenado
 YOLO_MODEL_PATH = os.path.join(_PROJECT_ROOT, 'leavesDetection', 'data', 'models', 'YOLO_run6.pt')
-
-# donde guardamos la imagen con la prediccion hecha
 OUTPUT_IMAGE_PATH = os.path.join(_PROJECT_ROOT, 'leavesDetection', 'data', 'inference_results')
-
 CACHE_PATH = os.path.join(_PROJECT_ROOT, 'leavesDetection', 'data', 'cache')
-
 DEBUG_PATH = os.path.join(_PROJECT_ROOT, 'leavesDetection', 'data', 'inference_results', 'debug')
 
 _MODEL = None # lo guardamos de manera global para no tener que cargarlo cada vez que se llama a la función de
@@ -99,7 +93,7 @@ def save_database_entry(image_source, session:int, healthy=0, sick=0, crop_list=
 
     lat, lon, timestamp = metainfo_collect(image_source)
 
-    print(f"Metainformación procesada - Lat: {lat}, Lon: {lon}, Fecha: {timestamp}")
+    print(f"metainformación procesada - Lat: {lat}, Lon: {lon}, Fecha: {timestamp}")
 
     img = create_image_with_direction(
         path=image_source,
