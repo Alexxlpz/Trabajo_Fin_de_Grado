@@ -41,7 +41,7 @@ def create_image_with_direction(path: str, latitude: float, longitude: float,
 
         session.add(img)
         session.flush()
-        for crop in crop_list:
+        for crop in (crop_list or []):
             create_crop(crop.status, crop.path, img.id, session)
 
         session.commit()
