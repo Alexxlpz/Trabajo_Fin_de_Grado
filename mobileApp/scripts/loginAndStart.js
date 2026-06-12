@@ -1,7 +1,12 @@
-const path = require('path');
+import {join} from 'path';
+import {fileURLToPath} from 'url';
+import {spawnSync} from 'child_process';
+import dotenv from 'dotenv';
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
 // Buscamos el .env en la raíz del proyecto (un nivel arriba de /scripts)
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
-const { spawnSync } = require('child_process');
+dotenv.config({path: join(__dirname, '..', '.env')});
 
 const user = process.env.EXPO_USER;
 const pass = process.env.EXPO_PASS;

@@ -1,4 +1,5 @@
 import base64
+from typing import Optional
 
 import cv2
 import numpy as np
@@ -8,155 +9,235 @@ from sahi.predict import get_sliced_prediction
 import os
 import time
 
+from src.backend.repository.classes.Crop import Crop
+from src.backend.repository.image_repo import create_image_with_direction
+from src.utilities import HitTimer
 from src.utilities.classifyObject import classifyObject
 from src.utilities.makePlot import make_plot
+from src.utilities.metainfoCollect import metainfo_collect
 
-# ruta del YOLO entrenado
-YOLO_MODEL_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/models/CNN/yolov12_Leaves_Detector_run2/weights/best.pt'
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_PROJECT_ROOT = os.path.abspath(os.path.join(_SCRIPT_DIR, '../../..'))
 
-# donde guardamos la imagen con la prediccion hecha
-OUTPUT_IMAGE_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/inference_results'
+YOLO_MODEL_PATH = os.path.join(_PROJECT_ROOT, 'leavesDetection', 'data', 'models', 'YOLO_run6.pt')
+OUTPUT_IMAGE_PATH = os.path.join(_PROJECT_ROOT, 'leavesDetection', 'data', 'inference_results')
+CACHE_PATH = os.path.join(_PROJECT_ROOT, 'leavesDetection', 'data', 'cache')
+DEBUG_PATH = os.path.join(_PROJECT_ROOT, 'leavesDetection', 'data', 'inference_results', 'debug')
 
-CACHE_PATH = 'C:/Users/alexl/PycharmProjects/Trabajo_Fin_de_Grado/leavesDetection/data/cache'
-
-_MODEL = None
+_MODEL = None # lo guardamos de manera global para no tener que cargarlo cada vez que se llama a la función de
+# prediccion, lo cargamos solo la primera vez y luego se reutiliza. Asi es bastante mas rápida la predicción
 
 def get_model():
-    """
-    Carga y cachea el modelo. Lanza FileNotFoundError si no existe el archivo.
-    """
     global _MODEL
     if _MODEL is not None:
         return _MODEL
 
     if not os.path.exists(YOLO_MODEL_PATH):
-        raise FileNotFoundError(f"Modelo no encontrado en `{YOLO_MODEL_PATH}`")
+        raise FileNotFoundError(f"modelo no encontrado en `{YOLO_MODEL_PATH}`")
 
     try:
         _MODEL = AutoDetectionModel.from_pretrained(
-            model_type='ultralytics',  # Tipo de modelo: YOLO
+            model_type='ultralytics',  # tipo de modelo: YOLO
             model_path=YOLO_MODEL_PATH,
-            confidence_threshold=0.3,  # Umbral de confianza al principio
+            confidence_threshold=0.3,  # umbral de confianza al principio
             device="cuda:0"  # para usar la grafica
         )
     except Exception as e:
-        raise RuntimeError(f"Error cargando el modelo desde `{YOLO_MODEL_PATH}`: {e}")
+        raise RuntimeError(f"error cargando el modelo desde `{YOLO_MODEL_PATH}`: {e}")
     return _MODEL
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-def predictionSlicing(imageName: str, plots: bool = False):
+def look_clock(timer: Optional[HitTimer] = None, label: str = ""):
+    if timer is not None:
+        elapsed = timer.hit()
+        print(f'{label}: "{elapsed*1000} milisegundos" desde el paso anterior')
 
-    teseledImagenName = f"teselado_{imageName}"
+def predictionSlicing(image_name: str, session: int, debug_mode: bool = False, hit_timer:  Optional[HitTimer] = None):
     # ruta de la imagen a predicie
-    IMAGE_SOURCE = os.path.join(CACHE_PATH, imageName)
+    image_source = os.path.join(CACHE_PATH, image_name)
+    threshold = 0.85
 
     detection_model = get_model()
-    print("Modelo YOLO cargado exitosamente.")
+    print("modelo YOLO cargado exitosamente.")
 
-    result, validObjects = prediction(IMAGE_SOURCE, detection_model, plots)
+    filtered_pred_list = prediction(image_source, detection_model, threshold, debug_mode, hit_timer)
 
-    encodeImage = cropAndClasify(result.object_prediction_list, IMAGE_SOURCE, CACHE_PATH)
+    encode_image, annotated_path, healthy, sick, crop_list = cropAndClasify(filtered_pred_list, image_source, CACHE_PATH, debug_mode, hit_timer)
+
+    look_clock(hit_timer, "antes_de_guardar_resultados")
+    if session != -1:
+        save_database_entry(
+            image_source= annotated_path,
+            session=session,
+            healthy = healthy,
+            sick = sick,
+            crop_list = crop_list
+        )
+    look_clock(hit_timer, "despues_de_guardar_resultados")
 
     #os.makedirs(OUTPUT_IMAGE_PATH, exist_ok=True)
-    #result.export_visuals(export_dir=OUTPUT_IMAGE_PATH, file_name=teseledImagenName)
+    #results.export_visuals(export_dir=OUTPUT_IMAGE_PATH, file_name=teseledImagenName)
 
     #with open(OUTPUT_IMAGE_PATH+'/'+teseledImagenName+'.png', "rb") as image:
         #encodeImage = base64.b64encode(image.read()).decode('utf-8')
 
     print("Proceso finalizado!!!")
-    os.remove(IMAGE_SOURCE)
+    os.remove(image_source)
 
-    return teseledImagenName, encodeImage, len(validObjects)
+    return encode_image, len(filtered_pred_list)
 
-def prediction(IMAGE_SOURCE, detection_model, plots: bool = False):
-    MAX_HEIGHT = 640
-    MAX_WIDTH = 640
+def save_database_entry(image_source, session:int, healthy=0, sick=0, crop_list=None):
+    if crop_list is None:
+        crop_list = []
+
+    lat, lon, timestamp = metainfo_collect(image_source)
+
+    print(f"metainformación procesada - Lat: {lat}, Lon: {lon}, Fecha: {timestamp}")
+
+    img = create_image_with_direction(
+        path=image_source,
+        latitude=lat,
+        longitude=lon,
+        user_id=session,
+        num_sick=int(sick),
+        num_healthy=int(healthy),
+        upload_date=timestamp,  # Ahora el formato es compatible con SQL
+        model_path=YOLO_MODEL_PATH,
+        crop_list=crop_list
+    )
+
+    print(img)
+
+
+
+def prediction(image_source, detection_model, threshold: float = 0.85, debug_mode: bool = False, hit_timer: Optional[HitTimer] = None):
 
     # Ponemos que los teselados sean 640x640 ya que a yolo lo entrenemos asi y se le hara mas facil predecir de esa manera
+
+    look_clock(hit_timer, "antes_de_localizar_hojas")
     result = get_sliced_prediction(
-        IMAGE_SOURCE,
+        image_source,
         detection_model,
         slice_height=640,  # Altura de cada teselado
         slice_width=640,  # Anchura de cada teselado
         overlap_height_ratio=0.2,  # Para el solapamiento vertical
         overlap_width_ratio=0.2  # Para el solapamiento horizontal
     )
+    look_clock(hit_timer, "despues_de_localizar_hojas")
 
     object_prediction_list = result.object_prediction_list
 
+    if debug_mode:
+        tiled_basename = f"YOLO_PREDICTION_{os.path.splitext(os.path.basename(image_source))[0]}"
+        try:
+            result.export_visuals(export_dir=DEBUG_PATH, file_name=tiled_basename)
+            print(f"visuales exportados en `{DEBUG_PATH}` con prefijo `{tiled_basename}`")
+        except Exception as e:
+            print(f"error exportando visuales: {e}")
+
+        confident_list = [pred.score.value for pred in result.object_prediction_list]
+        make_plot(confident_list, "confianza_predicciones_teselado_antes_del_filtrado_testing.png")
+
     print(f"total objetos detectados: {len(object_prediction_list)}")
 
-    if plots: # guardados en /data/plots
+    look_clock(hit_timer, "antes_de_filtrar")
+
+    #filtrado
+    valid_objects = [pred for pred in object_prediction_list if pred.score.value >= threshold]
+    valid_objects = sorted(valid_objects, key=lambda x: x.score.value, reverse=True)
+    best_items = valid_objects[:10]
+    result.object_prediction_list = best_items
+
+    look_clock(hit_timer, "despues_de_filtrar")
+
+    if debug_mode:
+        #Guardamos lo que ha visto el modelo filtrado
+        tiled_basename = f"YOLO_PREDICTION_{os.path.splitext(os.path.basename(image_source))[0]}_FILTERED"
+        try:
+            result.export_visuals(export_dir=DEBUG_PATH, file_name=tiled_basename)
+            print(f"visuales exportados en `{DEBUG_PATH}` con prefijo `{tiled_basename}`")
+        except Exception as e:
+            print(f"error exportando visuales: {e}")
+
         # hacemos un  grafico para ver la confianza de las predicciones tras filtrar
         confidentList = [pred.score.value for pred in result.object_prediction_list]
-        make_plot(confidentList, "confianza_predicciones_teselado_antes_del_filtrado.png")
-
-    validObjects = []
-    purgated = 0
-    for pred in object_prediction_list:
-        if pred.bbox.maxx - pred.bbox.minx < MAX_WIDTH and pred.bbox.maxy - pred.bbox.miny < MAX_HEIGHT:  # In order to try to filter, we only accept predictions smaller than the slice size (640x640)
-            validObjects.append(pred)
-        else:
-            purgated += 1
-
-    print(f"Total de objetos purgados: {purgated}")
-    # actualizar la lista de predicciones que usan las visualizaciones/exportaciones
-
-    result.object_prediction_list = validObjects
-    result.prediction_list = validObjects
-
-    if plots: # guardados en /data/plots
-        # hacemos un  grafico para ver la confianza de las predicciones tras filtrar
-        confidentList = [pred.score.value for pred in result.object_prediction_list]
-        make_plot(confidentList, "confianza_predicciones_teselado_tras_filtrado.png")
+        make_plot(confidentList, "confianza_predicciones_teselado_despues_del_filtrado_testing.png")
 
 
-    return result, validObjects
+    return best_items
 
 
-def cropAndClasify(predictions, image, cache_folder):
-    output_folder = os.path.join(cache_folder, "crops")
+def cropAndClasify(predictions, image, cache_folder, debug_mode: bool = False, hit_timer: Optional[HitTimer] = None):
+    output_folder = os.path.join(cache_folder, "results")
+    crops_output_folder = os.path.join(cache_folder, "crops")
+
     os.makedirs(output_folder, exist_ok=True)
 
     img = load_image_fix_orientation(image)
     if img is None:
         raise FileNotFoundError(f"Imagen no encontrada: {image}")
 
+    # Guardar la imagen anotada y devolverla en Base64
+    timestamp = time.strftime("%Y%m%d-%H%M%S")
+    annotated_filename = f"annotated_{timestamp}.jpg"
+    annotated_path = os.path.join(output_folder, annotated_filename)
 
     saved = 0
+    healthy = 0
+    sick = 0
+    crop_list = []
+
+
+    look_clock(hit_timer, "antes_de_crop_and_classify")
     for i, object_prediction in enumerate(predictions):
 
         crop, coords = cropObject(img, object_prediction)
 
-        #filename = f"crop_{i}.jpg"
-        #out_path = os.path.join(output_folder, filename)
-        #ok = cv2.imwrite(out_path, crop, [cv2.IMWRITE_JPEG_QUALITY, int(100)]) #realmente no es necesario guardar el
-                                                                                # crop, le pasamos directamente el array
-                                                                                #al clasificador y que se encargue el
-                                                                                #otro archivo
         if classifyObject(crop):
             #pintamos cuadro verde
             cv2.rectangle(img, (coords[0], coords[1]), (coords[2], coords[3]), (0, 255, 0), 2)
+            healthy += 1
+            status = "healthy"
         else:
             #pintamos cuadro rojo
             cv2.rectangle(img, (coords[0], coords[1]), (coords[2], coords[3]), (0, 0, 255), 2)
+            sick += 1
+            status = "diseased"
+
+        filename = f"{annotated_filename}_crop_{i}.jpg"
+        out_path = os.path.join(crops_output_folder, filename)
+        cv2.imwrite(out_path, crop, [cv2.IMWRITE_JPEG_QUALITY, int(100)])
+        crop_list.append(Crop(status=status, path=out_path))
+
+        if debug_mode:
+                # guardamos el crop para debuggear el clasificador
+                filename = f"crop_{i}.jpg"
+                out_path = os.path.join(DEBUG_PATH, filename)
+                cv2.imwrite(out_path, crop, [cv2.IMWRITE_JPEG_QUALITY, int(100)])
+
+        saved += 1
 
     print("se han guardado "+str(saved)+" crops")
+    look_clock(hit_timer, f"termina de clasificar las {saved} hojas")
 
-    # Guardar la imagen anotada y devolverla en Base64
-    timestamp = time.strftime("%Y%m%d-%H%M%S")
-    annotated_filename = f"annotated_{timestamp}.png"
-    annotated_path = os.path.join(output_folder, annotated_filename)
     ok = cv2.imwrite(annotated_path, img, [cv2.IMWRITE_JPEG_QUALITY, int(90)])
 
     if not ok:
-        raise RuntimeError(f"No se pudo guardar la imagen anotada en {annotated_path}")
+        raise RuntimeError(f"no se pudo guardar la imagen anotada en {annotated_path}")
+
+    if debug_mode:
+        debug_annotated_path = os.path.join(DEBUG_PATH, annotated_filename)
+        cv2.imwrite(debug_annotated_path, img, [cv2.IMWRITE_JPEG_QUALITY, int(90)])
+
+
+    if not ok:
+        raise RuntimeError(f"no se pudo guardar la imagen anotada en {annotated_path}")
 
     with open(annotated_path, "rb") as f:
         annotated_b64 = base64.b64encode(f.read()).decode('utf-8')
 
-    return annotated_b64
+    return annotated_b64, annotated_path, healthy, sick, crop_list
 
 
 

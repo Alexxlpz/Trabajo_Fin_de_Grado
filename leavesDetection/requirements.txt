@@ -1,3 +1,11 @@
+scikit-learn
+seaborn
+pandas
+matplotlib
+pydantic
+opencv-python
+spglib
+sqlalchemy
 pillow-heif
 transformers
 uvicorn
@@ -10,3 +18,5 @@ rembg
 Pillow
 tensorflow
 numpy
+pydantic[email]
+psycopg2

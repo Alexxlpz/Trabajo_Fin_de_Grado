@@ -1,5 +1,8 @@
 import os
 
+# todas las imágenes del dataset plantVillage tienen la hoja justo en el mismo sitio todas, en el centro de la imagen,
+# ocupando el mismo espacio, por lo que podemos generar etiquetas fijas para todas las imágenes, con la clase 0
+# (ya que solo tenemos una clase)
 CLASE_ID = 0
 X_CENTRO = 0.5000
 Y_CENTRO = 0.5000
@@ -8,11 +11,11 @@ ALTO = 0.8500
 
 ETIQUETA_LINEA = f"{CLASE_ID} {X_CENTRO:.4f} {Y_CENTRO:.4f} {ANCHO:.4f} {ALTO:.4f}\n"
 
-#IMAGENES_DIR = '../dataset/images/Pepper,_bell___healthy'
-#LABELS_DIR = '../dataset/labels/Pepper,_bell___healthy'
+#IMAGENES_DIR = '../dataset/images/healthy_leaves'
+#LABELS_DIR = '../dataset/labels/healthy_leaves'
 
-IMAGENES_DIR = '../../data/dataset/images/Pepper,_bell___Bacterial_spot'
-LABELS_DIR = '../../data/dataset/labels/Pepper,_bell___Bacterial_spot'
+IMAGENES_DIR = '../../data/dataset/images/diseased_leaves'
+LABELS_DIR = '../../data/dataset/labels/diseased_leaves'
 
 # makedirs es para hacer la carpeta si no existe
 os.makedirs(LABELS_DIR, exist_ok=True)

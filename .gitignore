@@ -1,3 +1,36 @@
+.idea/
+.vscode/
+.expo/
+leavesDetection/.idea/
+leavesDetection/.vscode/
+leavesDetection/.expo/
+**/.env
+**/.env.*
+mobileApp/node_modules/
+leavesDetection/.venv/
+leavesDetection/data/
+
 /leavesDetection/data/dataset/
 /leavesDetection/data/models/
 /leavesDetection/data/models/CNN/
+
+/leavesDetection/notebooks/clasificator_plots/
+/leavesDetection/notebooks/clasificator_plots/pre-trainingsetSam3/
+/leavesDetection/notebooks/pre-trainingsetSam3/
+
+# Python cache
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Training/dataset media and run artifacts
+/leavesDetection/notebooks/pre-trainingsetSam3/
+/leavesDetection/notebooks/clasificator_plots/
+/data/models/**/*.jpg
+/data/models/**/*.jpeg
+/data/models/**/*.png
+/data/models/**/results.csv
+/leavesDetection/data/inference_results/
+
+# Model weights
+*.pt
