@@ -209,21 +209,21 @@ export default function Camera() {
                     const tiempoIdaSeguro = tiempoRedPuro / 2;
                     const tiempoVueltaSeguro = tiempoRedPuro / 2;
 
-                    console.log(`Tiempo Total de ida y vuelta (RTT): ${tiempoTotalRTT} ms`);
-                    console.log(`Tiempo de procesamiento interno en FastAPI: ${tiempoProcesamientoServidor} ms`);
-                    console.log(`Tiempo estimado de Red (Ida): ${tiempoIdaSeguro} ms`);
-                    console.log(`Tiempo estimado de Red (Vuelta): ${tiempoVueltaSeguro} ms`);
+                    console.log(`tiempo Total de ida y vuelta (RTT): ${tiempoTotalRTT} ms`);
+                    console.log(`tiempo de procesamiento interno en FastAPI: ${tiempoProcesamientoServidor} ms`);
+                    console.log(`tiempo estimado de Red (Ida): ${tiempoIdaSeguro} ms`);
+                    console.log(`tiempo estimado de Red (Vuelta): ${tiempoVueltaSeguro} ms`);
 
                     setResultData(result);
                     setModalVisible(true);
                     addPhotoToRecents(result.image_base64);
                 } else {
-                    Alert.alert('Error', 'Respuesta inesperada del servidor');
-                    console.error('Respuesta inválida del servidor:', jsonRecived);
+                    Alert.alert('error', 'respuesta inesperada del servidor');
+                    console.error('respuesta inválida del servidor:', jsonRecived);
                 }
             } catch (error) {
               console.error(error);
-              Alert.alert('Error de conexión', 'No se pudo conectar con el servidor.');
+              Alert.alert('error de conexión', 'No se pudo conectar con el servidor.');
             }
     }
 

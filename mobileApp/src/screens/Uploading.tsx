@@ -5,7 +5,7 @@ import {
     FlatList, ScrollView, Dimensions
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { IP_ADDRESS } from "@env";
 import { useSession } from '../SessionContext';
 import AppBackground from '../component/AppBackground';
@@ -18,7 +18,7 @@ interface DetectionResult {
     image_base64: string;
 }
 
-const UploadingScreen = ({ navigation }: any) => {
+const UploadingScreen = () => {
     const { recents, setRecents, user } = useSession();
     const [loading, setLoading] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
@@ -68,7 +68,7 @@ const UploadingScreen = ({ navigation }: any) => {
 
         if (pickedResult.canceled) return;
 
-        const { base64, uri } = pickedResult.assets[0];
+        const { base64 } = pickedResult.assets[0];
 
         if (base64) {
             await uploadFile(base64);
@@ -125,7 +125,7 @@ const UploadingScreen = ({ navigation }: any) => {
                 const jsonRecived = await response.json();
                 console.log('Respuesta del servidor recibida');
 
-                // Guardamos los datos y mostramos el modal
+                // guardamos los datos y mostramos el modal
                 if (jsonRecived && typeof jsonRecived.leaf_count === 'number' && typeof jsonRecived.image_base64 === 'string') {
                     const result: DetectionResult = {
                         leaf_count: jsonRecived.leaf_count,
@@ -230,8 +230,8 @@ const UploadingScreen = ({ navigation }: any) => {
                         pagingEnabled
                         initialScrollIndex={selectedPhotoIndex}
                         getItemLayout={(_, index) => ({ length: windowWidth, offset: windowWidth * index, index })}
-                        keyExtractor={(item, index) => String(index)}
-                        renderItem={({ item, index }) => (
+                        keyExtractor={(_item, index) => String(index)}
+                        renderItem={({ item }) => (
                             <View style={[styles.galleryItem, { width: windowWidth, height: windowHeight }]}> 
                                 <Image
                                     source={{ uri: `data:image/jpeg;base64,${item}` }}
@@ -281,8 +281,13 @@ const UploadingScreen = ({ navigation }: any) => {
 };
 
 const styles = StyleSheet.create({
-    backgroundImage: { flex: 1 },
-    overlay: { flex: 1, backgroundColor: 'rgba(255,255,255,0.7)' },
+    backgroundImage: { 
+        flex: 1 
+    },
+    overlay: { 
+        flex: 1, 
+        backgroundColor: 'rgba(255,255,255,0.7)' 
+    },
     headerContainer: {
         backgroundColor: '#00875A',
         flexDirection: 'row',
@@ -290,10 +295,25 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingVertical: 10,
     },
-    backButton: { flexDirection: 'row', alignItems: 'center', paddingLeft: 10 },
-    backText: { color: 'white', fontSize: 16, marginLeft: 5 },
-    headerTitle: { color: 'white', fontSize: 18, fontWeight: 'bold' },
-    content: { padding: 25, alignItems: 'center' },
+    backButton: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        paddingLeft: 10 
+    },
+    backText: { 
+        color: 'white', 
+        fontSize: 16, 
+        marginLeft: 5 
+    },
+    headerTitle: { 
+        color: 'white', 
+        fontSize: 18, 
+        fontWeight: 'bold' 
+    },
+    content: { 
+        padding: 25, 
+        alignItems: 'center' 
+    },
     mainTitle: {
         fontSize: 34,
         fontWeight: 'bold',
@@ -321,11 +341,32 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 10,
     },
-    dashedText: { color: '#004D40', fontSize: 16, fontWeight: '500', textAlign: 'center' },
-    recentSection: { width: '100%', marginTop: 30 },
-    recentTitle: { fontSize: 20, fontWeight: 'bold', color: '#004D40', marginBottom: 15 },
-    recentImage: { width: 100, height: 100, borderRadius: 15, marginRight: 15 },
-    footer: { padding: 20, paddingBottom: 40 },
+    dashedText: { 
+        color: '#004D40', 
+        fontSize: 16, 
+        fontWeight: '500', 
+        textAlign: 'center' 
+    },
+    recentSection: { 
+        width: '100%', 
+        marginTop: 30 
+    },
+    recentTitle: { 
+        fontSize: 20, 
+        fontWeight: 'bold', 
+        color: '#004D40', 
+        marginBottom: 15 
+    },
+    recentImage: { 
+        width: 100, 
+        height: 100, 
+        borderRadius: 15, 
+        marginRight: 15 
+    },
+    footer: { 
+        padding: 20, 
+        paddingBottom: 40 
+    },
     uploadActionButton: {
         flexDirection: 'row',
         backgroundColor: 'white',
@@ -336,14 +377,60 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    uploadActionText: { color: '#00875A', fontSize: 18, fontWeight: 'bold', marginLeft: 10 },
-    modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.8)' },
-    modalContent: { backgroundColor: 'white', padding: 20, borderRadius: 25, alignItems: 'center', width: '90%' },
-    modalTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 15 },
-    resultImage: { width: '100%', height: 350, borderRadius: 15, marginBottom: 15 },
-    modalText: { fontSize: 18, marginBottom: 20 },
-    closeButton: { backgroundColor: '#00875A', paddingHorizontal: 40, paddingVertical: 12, borderRadius: 15 },
-    closeButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+    uploadActionText: { 
+        color: '#00875A', 
+        fontSize: 18, 
+        
+        fontWeight: 'bold', 
+        marginLeft: 10 
+
+    },
+    modalOverlay: { 
+        flex: 1, 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        backgroundColor: 'rgba(0,0,0,0.8)' 
+
+    },
+    modalContent: { 
+        backgroundColor: 'white', 
+        padding: 20, 
+        borderRadius: 25, 
+        alignItems: 'center', 
+        width: '90%' 
+
+    },
+    modalTitle: { 
+        fontSize: 22, 
+        fontWeight: 'bold', 
+        marginBottom: 15 
+
+    },
+    resultImage: { 
+        width: '100%', 
+        height: 350, 
+        borderRadius: 15, 
+        marginBottom: 15 
+
+    },
+    modalText: { 
+        fontSize: 18, 
+        marginBottom: 20 
+
+    },
+    closeButton: { 
+        backgroundColor: '#00875A', 
+        paddingHorizontal: 40, 
+        paddingVertical: 12, 
+        borderRadius: 15 
+
+    },
+    closeButtonText: { 
+        color: 'white', 
+        fontWeight: 'bold', 
+        fontSize: 16 
+
+    },
     innerCircle: {
         width: 88,
         height: 88,
@@ -370,13 +457,50 @@ const styles = StyleSheet.create({
         marginTop: 6,
         textAlign: 'center',
     },
-    loadingWrapper: { alignItems: 'center' },
-    galleryOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.95)', justifyContent: 'center', alignItems: 'center' },
-    galleryItem: { justifyContent: 'center', alignItems: 'center' },
-    fullImage: { borderRadius: 12 },
-    galleryClose: { position: 'absolute', top: 48, right: 20, zIndex: 20 },
-    galleryNavRow: { position: 'absolute', bottom: 40, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 30, alignItems: 'center' },
-    galleryNavButton: { backgroundColor: 'rgba(0,0,0,0.35)', padding: 10, borderRadius: 30 },
+    loadingWrapper: { 
+        alignItems: 'center' 
+        
+    },
+    galleryOverlay: { 
+        flex: 1, 
+        backgroundColor: 'rgba(0,0,0,0.95)', 
+        justifyContent: 'center', 
+        alignItems: 'center' 
+        
+    },
+    galleryItem: { 
+        justifyContent: 'center', 
+        alignItems: 'center' 
+        
+    },
+    fullImage: { 
+        borderRadius: 12 
+        
+    },
+    galleryClose: { 
+        position: 'absolute', 
+        top: 48, 
+        right: 20, 
+        zIndex: 20 
+        
+    },
+    galleryNavRow: { 
+        position: 'absolute', 
+        bottom: 40, 
+        left: 0, 
+        right: 0, 
+        flexDirection: 'row', 
+        justifyContent: 'space-between', 
+        paddingHorizontal: 30, 
+        alignItems: 'center' 
+        
+    },
+    galleryNavButton: { 
+        backgroundColor: 'rgba(0,0,0,0.35)', 
+        padding: 10, 
+        borderRadius: 30 
+        
+    },
 });
 
 export default UploadingScreen;

@@ -44,12 +44,12 @@ def classifyObject(img_array) -> bool:
     # Usamos 0.5 como punto de corte.
     if resultado_numerico < 0.5:
         confianza = (1 - resultado_numerico) * 100
-        print(f"Diagnóstico: 🍂 ENFERMA")
+        print(f"Diagnóstico: ENFERMA")
         print(f"Seguridad: {confianza:.2f}%")
         return False
     else:
         confianza = resultado_numerico * 100
-        print(f"Diagnóstico: 🌿 SANA")
+        print(f"Diagnóstico: SANA")
         print(f"Seguridad: {confianza:.2f}%")
         return True
 

@@ -1,5 +1,5 @@
-import React, {useContext, useState, useRef, useEffect} from 'react';
-import {View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Modal, Pressable, Dimensions} from 'react-native';
+import React, {useState, useRef, useEffect} from 'react';
+import {View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Modal, Dimensions} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSession } from '../SessionContext';
 
@@ -21,7 +21,6 @@ const Gallery: React.FC = () => {
 
   useEffect(() => {
     if (visible) {
-      // ensure FlatList is scrolled to current when modal opens
       setTimeout(() => {
         flatListRef.current?.scrollToIndex({ index: current, animated: false });
       }, 50);
@@ -65,7 +64,7 @@ const Gallery: React.FC = () => {
             initialScrollIndex={current}
             getItemLayout={(_, index) => ({ length: windowWidth, offset: windowWidth * index, index })}
             keyExtractor={(item, index) => String(index)}
-            renderItem={({ item, index }) => (
+            renderItem={({ item}) => (
               <View style={[styles.galleryItem, { width: windowWidth, height: windowHeight }]}> 
                 <Image
                   source={{ uri: `data:image/jpeg;base64,${item}` }}
@@ -104,22 +103,87 @@ const Gallery: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: '#0f1724', paddingTop: 20},
-  title: {color: '#fff', fontSize: 22, fontWeight: '600', paddingHorizontal: 16, marginBottom: 12},
-  list: {paddingHorizontal: padding, paddingBottom: 20},
-  thumbWrapper: {margin: padding / 2, borderRadius: 8, overflow: 'hidden', backgroundColor: '#0b1220'},
-  thumb: {width: '100%', height: '100%'},
-  empty: {flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40},
-  emptyText: {color: '#9aa4b2'},
-  modalBackground: {flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center'},
-  modalContent: {alignItems: 'center', justifyContent: 'center'},
-  fullImage: { borderRadius: 12 },
-  closeArea: {flex: 1},
-  galleryOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.95)', justifyContent: 'center', alignItems: 'center' },
-  galleryItem: { justifyContent: 'center', alignItems: 'center' },
-  galleryClose: { position: 'absolute', top: 48, right: 20, zIndex: 20 },
-  galleryNavRow: { position: 'absolute', bottom: 40, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 30, alignItems: 'center' },
-  galleryNavButton: { backgroundColor: 'rgba(0,0,0,0.35)', padding: 10, borderRadius: 30 },
+  container: {
+    flex: 1, 
+    backgroundColor: '#0f1724', 
+    paddingTop: 20
+  },
+  title: {
+    color: '#fff', 
+    fontSize: 22, 
+    fontWeight: '600', 
+    paddingHorizontal: 16, 
+    marginBottom: 12
+  },
+  list: {
+    paddingHorizontal: padding, 
+    paddingBottom: 20
+  },
+  thumbWrapper: {
+    margin: padding / 2, 
+    borderRadius: 8, 
+    overflow: 'hidden', 
+    backgroundColor: '#0b1220'
+  },
+  thumb: {
+    width: '100%', 
+    height: '100%'
+  },
+  empty: {
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    padding: 40
+  },
+  emptyText: {
+    color: '#9aa4b2'
+  },
+  modalBackground: {
+    flex: 1, 
+    backgroundColor: 'rgba(0,0,0,0.85)', 
+    justifyContent: 'center'
+  },
+  modalContent: {
+    alignItems: 'center', 
+    justifyContent: 'center'
+  },
+  fullImage: { 
+    borderRadius: 12 
+  },
+  closeArea: {
+    flex: 1
+  },
+  galleryOverlay: { 
+    flex: 1, 
+    backgroundColor: 'rgba(0,0,0,0.95)', 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  galleryItem: { 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  galleryClose: { 
+    position: 'absolute', 
+    top: 48, 
+    right: 20, 
+    zIndex: 20 
+  },
+  galleryNavRow: { 
+    position: 'absolute', 
+    bottom: 40, 
+    left: 0, 
+    right: 0, 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    paddingHorizontal: 30, 
+    alignItems: 'center' 
+  },
+  galleryNavButton: { 
+    backgroundColor: 'rgba(0,0,0,0.35)', 
+    padding: 10, 
+    borderRadius: 30 
+  },
 });
 
 export default Gallery;

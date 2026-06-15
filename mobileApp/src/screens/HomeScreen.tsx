@@ -1,7 +1,7 @@
 import React from 'react';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Text, View, StyleSheet, TouchableOpacity, Alert } from "react-native";
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useSession } from '../SessionContext';
 import AppBackground from '../component/AppBackground';
 
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     },
     overlay: {
         flex: 1,
-        backgroundColor: 'rgba(255, 255, 255, 0.65)', // Superposición blanca translúcida
+        backgroundColor: 'rgba(255, 255, 255, 0.65)',
     },
     container: {
         flex: 1,
@@ -65,19 +65,18 @@ const styles = StyleSheet.create({
     },
     topSection: {
         alignItems: 'center',
-        marginBottom: 80, // Separación entre títulos y botones
+        marginBottom: 80,
     },
     iconCircle: {
         width: 110,
         height: 110,
         borderRadius: 55,
-        backgroundColor: '#D1F2E0', // Verde muy claro
+        backgroundColor: '#D1F2E0',
         borderWidth: 3,
-        borderColor: '#E8F8F0', // Borde casi blanco
+        borderColor: '#E8F8F0',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 15,
-        // Sombra
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.15,
@@ -97,7 +96,7 @@ const styles = StyleSheet.create({
     },
     buttonsContainer: {
         width: '100%',
-        gap: 18, // Espaciado nativo entre botones
+        gap: 18,
     },
     primaryButton: {
         flexDirection: 'row',

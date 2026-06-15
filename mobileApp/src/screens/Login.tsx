@@ -8,14 +8,12 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
-  Image,
+  Alert
 } from 'react-native';
 import { IP_ADDRESS } from "@env";
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSession } from '../SessionContext';
 import { useNavigation } from '@react-navigation/native';
-import { User } from '../classes/User';
 import AppBackground from '../component/AppBackground';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -72,7 +70,7 @@ export default function LoginScreen() {
               }
 
               const jsonRecived = await response.json();
-               console.log('Respuesta del servidor recibida');
+               console.log('respuesta del servidor recibida');
 
                 if (jsonRecived && jsonRecived.message && Array.isArray(jsonRecived.recent_list)) {
                     // guardo los path de manera local para tenerlos disponibles en la pantalla de upload y redirijo a la pantalla anterior
