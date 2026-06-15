@@ -5,7 +5,7 @@ import {
     FlatList, ScrollView, Dimensions
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { IP_ADDRESS } from "@env";
 import { useSession } from '../SessionContext';
 import AppBackground from '../component/AppBackground';
@@ -18,7 +18,7 @@ interface DetectionResult {
     image_base64: string;
 }
 
-const UploadingScreen = ({ navigation }: any) => {
+const UploadingScreen = () => {
     const { recents, setRecents, user } = useSession();
     const [loading, setLoading] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
@@ -68,7 +68,7 @@ const UploadingScreen = ({ navigation }: any) => {
 
         if (pickedResult.canceled) return;
 
-        const { base64, uri } = pickedResult.assets[0];
+        const { base64 } = pickedResult.assets[0];
 
         if (base64) {
             await uploadFile(base64);
@@ -230,8 +230,8 @@ const UploadingScreen = ({ navigation }: any) => {
                         pagingEnabled
                         initialScrollIndex={selectedPhotoIndex}
                         getItemLayout={(_, index) => ({ length: windowWidth, offset: windowWidth * index, index })}
-                        keyExtractor={(item, index) => String(index)}
-                        renderItem={({ item, index }) => (
+                        keyExtractor={(_item, index) => String(index)}
+                        renderItem={({ item }) => (
                             <View style={[styles.galleryItem, { width: windowWidth, height: windowHeight }]}> 
                                 <Image
                                     source={{ uri: `data:image/jpeg;base64,${item}` }}

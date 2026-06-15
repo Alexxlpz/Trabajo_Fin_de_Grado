@@ -1,7 +1,7 @@
 import React from 'react';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Text, View, StyleSheet, TouchableOpacity, Alert } from "react-native";
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useSession } from '../SessionContext';
 import AppBackground from '../component/AppBackground';
 

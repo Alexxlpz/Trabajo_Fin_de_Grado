@@ -1,5 +1,5 @@
-import React, {useContext, useState, useRef, useEffect} from 'react';
-import {View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Modal, Pressable, Dimensions} from 'react-native';
+import React, {useState, useRef, useEffect} from 'react';
+import {View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Modal, Dimensions} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSession } from '../SessionContext';
 
@@ -64,7 +64,7 @@ const Gallery: React.FC = () => {
             initialScrollIndex={current}
             getItemLayout={(_, index) => ({ length: windowWidth, offset: windowWidth * index, index })}
             keyExtractor={(item, index) => String(index)}
-            renderItem={({ item, index }) => (
+            renderItem={({ item}) => (
               <View style={[styles.galleryItem, { width: windowWidth, height: windowHeight }]}> 
                 <Image
                   source={{ uri: `data:image/jpeg;base64,${item}` }}

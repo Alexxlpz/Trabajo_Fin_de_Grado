@@ -8,14 +8,12 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
-  Image,
+  Alert
 } from 'react-native';
 import { IP_ADDRESS } from "@env";
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSession } from '../SessionContext';
 import { useNavigation } from '@react-navigation/native';
-import { User } from '../classes/User';
 import AppBackground from '../component/AppBackground';
 import { Ionicons } from '@expo/vector-icons';
 
